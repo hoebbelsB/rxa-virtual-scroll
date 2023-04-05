@@ -158,7 +158,6 @@ declare const ngDevMode: boolean;
   selector: '[rxVirtualFor]',
   providers: [{ provide: RxVirtualViewRepeater, useExisting: RxVirtualFor }],
 })
-// eslint-disable-next-line @angular-eslint/directive-class-suffix
 export class RxVirtualFor<T, U extends NgIterable<T> = NgIterable<T>>
   implements RxVirtualViewRepeater<T>, OnInit, OnDestroy
 {
@@ -177,8 +176,6 @@ export class RxVirtualFor<T, U extends NgIterable<T> = NgIterable<T>>
    *
    * @param potentialObservable
    */
-  // TODO: undefined / null input causes scrollbar to fuck up
-  // TODO: initial scrollbar position is weird
   @Input()
   set rxVirtualFor(
     potentialObservable:

@@ -17,11 +17,9 @@ import {
   Observable,
   ReplaySubject,
   Subject,
-  distinctUntilChanged,
-  takeUntil,
   merge,
-  map,
 } from 'rxjs';
+import { distinctUntilChanged, takeUntil, map } from 'rxjs/operators';
 import {
   RxVirtualScrollStrategy,
   RxVirtualScrollViewport,

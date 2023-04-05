@@ -105,17 +105,16 @@ export function getVirtualTemplateHandler<C extends RxListViewContext<T>, T>({
                   });
                   switch (type) {
                     case ListTemplateChangeType.insert:
-                      // console.log('perform insert', payload);
                       _insertView(
                         item,
                         index!,
                         count,
                         renderedRange.start + index!
                       );
+                      // console.log('perform insert', update());
                       _viewRendered$.next(update());
                       break;
                     case ListTemplateChangeType.move:
-                      // console.log('perform move', payload);
                       _moveView(
                         item,
                         adjustedPreviousIndex!,
@@ -123,33 +122,34 @@ export function getVirtualTemplateHandler<C extends RxListViewContext<T>, T>({
                         count,
                         renderedRange.start + index!
                       );
+                      // console.log('perform move', update());
                       _viewRendered$.next(update());
                       break;
                     case ListTemplateChangeType.remove:
-                      // console.log('perform remove', payload);
-                      if (index) {
+                      if (index != null) {
                         _detachAndCacheView(index);
                       }
-                      _viewRendered$.next(update());
+                      // console.log('perform remove', update());
+                      // _viewRendered$.next(update());
                       break;
                     case ListTemplateChangeType.update:
-                      // console.log('perform update', payload);
                       _updateView(
                         item,
                         index!,
                         count,
                         renderedRange.start + index!
                       );
+                      // console.log('perform update', update());
                       _viewRendered$.next(update());
                       break;
                     case ListTemplateChangeType.context:
-                      // console.log('perform context', payload);
                       _updateView(
                         item,
                         index!,
                         count,
                         renderedRange.start + index!
                       );
+                      // console.log('perform context', update());
                       _viewRendered$.next(update());
                       break;
                   }

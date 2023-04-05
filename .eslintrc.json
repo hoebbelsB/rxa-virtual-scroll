@@ -25,6 +25,9 @@
     {
       "files": ["*.ts", "*.tsx"],
       "extends": ["plugin:@nrwl/nx/typescript"],
+      "parserOptions": {
+        "project": "./tsconfig.base.json"
+      },
       "rules": {}
     },
     {

@@ -1,4 +1,11 @@
-import { switchMap } from 'rxjs/operators';
+import {
+  switchMap,
+  distinctUntilChanged,
+  map,
+  startWith,
+  takeUntil,
+  tap,
+} from 'rxjs/operators';
 import {
   ListRange,
   RxVirtualForViewContext,
@@ -16,11 +23,6 @@ import {
   combineLatest,
   ReplaySubject,
   Subject,
-  distinctUntilChanged,
-  map,
-  startWith,
-  takeUntil,
-  tap,
   MonoTypeOperatorFunction,
 } from 'rxjs';
 import { RxVirtualScrollStrategy } from '../model';
@@ -39,7 +41,6 @@ import { RxVirtualScrollStrategy } from '../model';
  * @publicApi
  */
 @Directive({
-  // eslint-disable-next-line @angular-eslint/directive-selector
   selector: 'rx-virtual-scroll-viewport[itemSize]',
   providers: [
     {
@@ -48,7 +49,6 @@ import { RxVirtualScrollStrategy } from '../model';
     },
   ],
 })
-// eslint-disable-next-line @angular-eslint/directive-class-suffix
 export class FixedSizeVirtualScrollStrategy<
     T,
     U extends NgIterable<T> = NgIterable<T>

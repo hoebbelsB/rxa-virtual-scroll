@@ -20,29 +20,22 @@ import {
   of,
   OperatorFunction,
   Subject,
-  catchError,
-  filter,
-  map,
-  switchMap,
-  tap,
   NEVER,
   MonoTypeOperatorFunction,
 } from 'rxjs';
+import { catchError, filter, map, switchMap, tap } from 'rxjs/operators';
 import {
   RxStrategyCredentials,
   strategyHandling,
 } from '@rx-angular/cdk/render-strategies';
 import { getVirtualTemplateHandler } from './virtual-list-view-handler';
 
-export interface RxListManager<T> {
-  nextStrategy: (config: string | Observable<string>) => void;
-}
-
-export type VirtualListManager<T, C> = RxListManager<T> & {
+export type VirtualListManager<T, C> = {
   render(
     data$: Observable<NgIterable<T> | null | undefined>,
     range$: Observable<ListRange>
   ): Observable<any>;
+  nextStrategy: (config: string | Observable<string>) => void;
   viewsRendered$: Observable<EmbeddedViewRef<C>[]>;
   viewRendered$: Observable<{
     index: number;

@@ -1,5 +1,14 @@
 import { coalesceWith } from '@rx-angular/cdk/coalescing';
-import { distinctUntilKeyChanged } from 'rxjs/operators';
+import {
+  distinctUntilKeyChanged,
+  distinctUntilChanged,
+  filter,
+  map,
+  startWith,
+  switchMap,
+  takeUntil,
+  tap,
+} from 'rxjs/operators';
 import {
   ListRange,
   RxVirtualScrollViewport,
@@ -22,13 +31,6 @@ import {
   ReplaySubject,
   scheduled,
   Subject,
-  distinctUntilChanged,
-  filter,
-  map,
-  startWith,
-  switchMap,
-  takeUntil,
-  tap,
   Observable,
   animationFrameScheduler,
   MonoTypeOperatorFunction,
@@ -80,7 +82,6 @@ function removeFromArray(arr: any[], index: number): any {
  * @publicApi
  */
 @Directive({
-  // eslint-disable-next-line @angular-eslint/directive-selector
   selector: 'rx-virtual-scroll-viewport[autosize]',
   providers: [
     {

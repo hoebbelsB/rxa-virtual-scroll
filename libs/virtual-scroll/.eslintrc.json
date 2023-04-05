@@ -4,19 +4,21 @@
   "overrides": [
     {
       "files": ["*.ts"],
+//      "extends": [
+//        "plugin:@angular-eslint/recommended",
+//        "plugin:@angular-eslint/template/process-inline-templates"
+//      ],
       "rules": {
         "@typescript-eslint/no-non-null-assertion": "off",
         "@angular-eslint/no-input-rename": "off",
         "@angular-eslint/directive-class-suffix": "off"
-      },
-      "extends": [
-        "plugin:@nrwl/nx/angular",
-        "plugin:@angular-eslint/template/process-inline-templates"
-      ]
+      }
     },
     {
       "files": ["*.html"],
-      "extends": ["plugin:@nrwl/nx/angular-template"],
+      "extends": [
+        "plugin:@angular-eslint/template/recommended"
+      ],
       "rules": {}
     }
   ]
