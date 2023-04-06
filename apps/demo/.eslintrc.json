@@ -6,21 +6,12 @@
       "files": ["*.ts"],
       "rules": {
         "@angular-eslint/directive-selector": [
-          "error",
-          {
-            "type": "attribute",
-            "prefix": "rxVirtualScroll",
-            "style": "camelCase"
-          }
+          "off"
         ],
         "@angular-eslint/component-selector": [
-          "error",
-          {
-            "type": "element",
-            "prefix": "rx-virtual-scroll",
-            "style": "kebab-case"
-          }
-        ]
+          "off"
+        ],
+        "@angular-eslint/no-host-metadata-property": ["off"]
       },
       "extends": [
         "plugin:@nrwl/nx/angular",
