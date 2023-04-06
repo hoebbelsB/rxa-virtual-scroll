@@ -58,6 +58,9 @@ function removeFromArray(arr: any[], index: number): any {
   }
 }
 
+const defaultSizeExtract = (entry: ResizeObserverEntry) =>
+  entry.borderBoxSize[0].blockSize;
+
 /**
  * @Directive AutosizeVirtualScrollStrategy
  *
@@ -128,11 +131,9 @@ export class AutosizeVirtualScrollStrategy<
    * You can customize the config passed to the ResizeObserver as well as determine
    * which result property to use when determining the views size.
    */
-  @Input() resizeObserverConfig: {
+  @Input() resizeObserverConfig?: {
     options?: ResizeObserverOptions;
-    extractSize: (entries: ResizeObserverEntry[]) => number;
-  } = {
-    extractSize: (entries) => entries[0].contentRect.height,
+    extractSize?: (entry: ResizeObserverEntry) => number;
   };
 
   /** @internal */
@@ -213,9 +214,19 @@ export class AutosizeVirtualScrollStrategy<
 
   /** @internal */
   private readonly detached$ = new Subject<void>();
+
+  /** @internal */
+  private resizeObserver?: ResizeObserver;
+  /** @internal */
+  private viewsResized$ = new Subject<ResizeObserverEntry[]>();
+
   /** @internal */
   private until$<A>(): MonoTypeOperatorFunction<A> {
     return (o$) => o$.pipe(takeUntil(this.detached$));
+  }
+
+  private get extractSize() {
+    return this.resizeObserverConfig?.extractSize ?? defaultSizeExtract;
   }
 
   /** @internal */
@@ -235,6 +246,9 @@ export class AutosizeVirtualScrollStrategy<
   ): void {
     this.viewport = viewport;
     this.viewRepeater = viewRepeater;
+    this.resizeObserver = new ResizeObserver((events) => {
+      this.viewsResized$.next(events);
+    });
     this.calcRenderedRange();
     this.maintainVirtualItems();
     this.positionElements();
@@ -245,6 +259,8 @@ export class AutosizeVirtualScrollStrategy<
     this.viewport = null;
     this.viewRepeater = null;
     this._virtualItems = [];
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = undefined;
     this.detached$.next();
   }
 
@@ -419,60 +435,38 @@ export class AutosizeVirtualScrollStrategy<
             })
           ),
           this.viewRepeater!.viewsRendered$.pipe(
+            // debounceTime(0, asapScheduler),
             switchMap((views) =>
-              merge(
-                ...views.map((view, index) =>
-                  this.observeViewSize$(view, index, index + adjustIndexWith)
-                )
-              ).pipe((o$) => {
-                const _resized = new Map<
-                  number,
-                  {
-                    view: EmbeddedViewRef<any>;
-                    index: number;
-                    size: number;
-                    adjustedIndex: number;
-                  }
-                >();
-                return o$.pipe(
-                  tap((v) => _resized.set(v.index, v)),
-                  coalesceWith(this.animationFrameTick()),
-                  tap(() => {
-                    const sortedIds = Array.from(_resized.keys()).sort(
-                      (a, b) => a - b
-                    );
-                    let i = sortedIds[0];
-                    const first = _resized.get(i);
-                    const range = {
-                      start: first!.adjustedIndex,
-                      end: renderedRange.end,
-                    };
-                    let position = this.calcInitialPosition(range);
-                    for (i; i < views.length; i++) {
-                      const index = i + adjustIndexWith;
-                      position += this.adjustElementPosition({
-                        view: views[i],
-                        index,
-                        position,
-                        viewSize: _resized.get(i)?.size,
-                      });
-                      if (
-                        position < this.scrollTop &&
-                        index >= this.scrolledIndex
-                      ) {
-                        this.scrolledIndex = index + 1;
-                      } else if (
-                        index < this.scrolledIndex &&
-                        position > this.scrollTop
-                      ) {
-                        this.scrolledIndex = index;
-                      }
+              this.observeViewSizes$(adjustIndexWith, views).pipe(
+                tap((lowestId) => {
+                  let i = lowestId;
+                  const range = {
+                    start: i + adjustIndexWith,
+                    end: renderedRange.end,
+                  };
+                  let position = this.calcInitialPosition(range);
+                  for (i; i < views.length; i++) {
+                    const index = i + adjustIndexWith;
+                    position += this.adjustElementPosition({
+                      view: views[i],
+                      index,
+                      position,
+                    });
+                    if (
+                      position < this.scrollTop &&
+                      index >= this.scrolledIndex
+                    ) {
+                      this.scrolledIndex = index + 1;
+                    } else if (
+                      index < this.scrolledIndex &&
+                      position > this.scrollTop
+                    ) {
+                      this.scrolledIndex = index;
                     }
-                    this.contentSize = position + remainingSize;
-                    _resized.clear();
-                  })
-                );
-              })
+                  }
+                  this.contentSize = position + remainingSize;
+                })
+              )
             )
           )
         );
@@ -576,44 +570,59 @@ export class AutosizeVirtualScrollStrategy<
     }
     this.positionElement(element, position);
     this._virtualItems[index] = {
-      size: size,
+      size,
     };
     return size;
   }
-  /** @internal */
-  private observeViewSize$(
-    view: EmbeddedViewRef<any>,
-    index: number,
-    adjustedIndex: number
-  ): Observable<{
-    view: EmbeddedViewRef<any>;
-    index: number;
-    size: number;
-    adjustedIndex: number;
-  }> {
-    return observeElementSize(this.getElement(view), {
-      extract: (entries: ResizeObserverEntry[]) => {
-        return {
-          target: entries[0].target,
-          size: this.resizeObserverConfig.extractSize(entries),
-        };
-      },
-      options: this.resizeObserverConfig.options,
+
+  private observeViewSizes$(
+    adjustIndexWith: number,
+    views: EmbeddedViewRef<any>[]
+  ): Observable<number> {
+    const elementCache = new WeakMap<Element, number>();
+    let lowestResizedId: number | undefined;
+    for (let i = 0; i < views.length; i++) {
+      const element = this.getElement(views[i]);
+      this.resizeObserver!.observe(element, this.resizeObserverConfig?.options);
+      elementCache.set(element, i);
+    }
+    return new Observable<number>((observer) => {
+      const inner = this.viewsResized$.subscribe((events) => {
+        events.forEach((event) => {
+          if (!event.target.isConnected) {
+            return;
+          }
+          const cachedId = elementCache.get(event.target);
+          if (cachedId !== undefined) {
+            lowestResizedId = Math.min(
+              lowestResizedId ?? Number.MAX_SAFE_INTEGER,
+              cachedId
+            );
+            this._virtualItems[cachedId + adjustIndexWith].size = Math.ceil(
+              this.extractSize(event)
+            );
+          }
+        });
+        if (lowestResizedId !== undefined) {
+          observer.next(lowestResizedId);
+        }
+      });
+      return () => {
+        for (let i = 0; i < views.length; i++) {
+          const element = this.getElement(views[i]);
+          this.resizeObserver?.unobserve(element);
+        }
+        inner.unsubscribe();
+      };
     }).pipe(
-      filter(
-        ({ target, size }) =>
-          target.isConnected &&
-          Math.ceil(size) !== this._virtualItems[adjustedIndex].size
-      ),
-      map(({ size }) => ({
-        size: Math.ceil(size),
-        view,
-        index,
-        adjustedIndex,
-      })),
-      distinctUntilKeyChanged('size')
+      coalesceWith(this.animationFrameTick()),
+      map((lowestId) => {
+        lowestResizedId = undefined;
+        return lowestId;
+      })
     );
   }
+
   /** @internal */
   private getItemSize(index: number): number {
     return this._virtualItems[index].size || this.tombstoneSize;
@@ -661,7 +670,6 @@ export class AutosizeVirtualScrollStrategy<
 }
 
 import { NgModule } from '@angular/core';
-import { observeElementSize } from '../observe-element-size';
 
 @NgModule({
   imports: [],
