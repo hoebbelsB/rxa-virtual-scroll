@@ -17,7 +17,9 @@ import {
   EmbeddedViewRef,
   Input,
   NgIterable,
+  OnChanges,
   OnDestroy,
+  SimpleChanges,
 } from '@angular/core';
 import {
   combineLatest,
@@ -54,7 +56,7 @@ export class FixedSizeVirtualScrollStrategy<
     U extends NgIterable<T> = NgIterable<T>
   >
   extends RxVirtualScrollStrategy<T, U>
-  implements OnDestroy
+  implements OnChanges, OnDestroy
 {
   /**
    * @description
@@ -74,30 +76,8 @@ export class FixedSizeVirtualScrollStrategy<
    */
   @Input() runwayItemsOpposite = 5;
 
-  /**
-   * @description
-   * Styles that will be applied to a DOM element when being positioned. A useful
-   * example is if you want to implement a css based fade-in animation by setting
-   * the opacity of the rendered item to 1 when getting position.
-   *
-   * @example
-   * \@Component({
-   *   template: `
-   *    <rx-virtual-scroll-viewport
-   *      [itemSize]="50"
-   *      [enterStyles]="{opacity: '1'}"
-   *    ></rx-virtual-scroll-viewport>
-   *   `,
-   *   styles: [`
-   *    .item {
-   *      opacity: 0;
-   *      transition: opacity 125ms linear;
-   *    }
-   *   `]
-   * })
-   * export class VirtualComponent {}
-   */
-  @Input() enterStyles?: Record<keyof CSSStyleDeclaration, string>;
+  /** @internal */
+  private readonly runwayStateChanged$ = new Subject<void>();
 
   private viewport: RxVirtualScrollViewport | null = null;
   private viewRepeater: RxVirtualViewRepeater<T, U> | null = null;
@@ -112,7 +92,6 @@ export class FixedSizeVirtualScrollStrategy<
 
   private readonly _contentSize$ = new ReplaySubject<number>(1);
   readonly contentSize$ = this._contentSize$.asObservable();
-
   private _contentSize = 0;
   private set contentSize(size: number) {
     this._contentSize = size;
@@ -134,6 +113,17 @@ export class FixedSizeVirtualScrollStrategy<
   private direction: 'up' | 'down' = 'down';
 
   private readonly detached$ = new Subject<void>();
+
+  /** @internal */
+  ngOnChanges(changes: SimpleChanges) {
+    if (
+      (changes['runwayItemsOpposite'] &&
+        !changes['runwayItemsOpposite'].firstChange) ||
+      (changes['runwayItems'] && !changes['runwayItems'].firstChange)
+    ) {
+      this.runwayStateChanged$.next();
+    }
+  }
 
   ngOnDestroy() {
     this.detach();
@@ -200,6 +190,7 @@ export class FixedSizeVirtualScrollStrategy<
       dataLengthChanged$,
       this.viewport!.containerSize$,
       onScroll$,
+      this.runwayStateChanged$.pipe(startWith(void 0)),
     ])
       .pipe(
         map(([length, containerSize]) => {

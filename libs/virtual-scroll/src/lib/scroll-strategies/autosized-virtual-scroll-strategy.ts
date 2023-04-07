@@ -1,8 +1,6 @@
 import { coalesceWith } from '@rx-angular/cdk/coalescing';
 import {
-  distinctUntilKeyChanged,
   distinctUntilChanged,
-  filter,
   map,
   startWith,
   switchMap,
@@ -23,7 +21,9 @@ import {
   IterableDiffers,
   NgIterable,
   NgZone,
+  OnChanges,
   OnDestroy,
+  SimpleChanges,
 } from '@angular/core';
 import {
   combineLatest,
@@ -98,7 +98,7 @@ export class AutosizeVirtualScrollStrategy<
     U extends NgIterable<T> = NgIterable<T>
   >
   extends RxVirtualScrollStrategy<T, U>
-  implements OnDestroy
+  implements OnChanges, OnDestroy
 {
   /**
    * @description
@@ -178,7 +178,7 @@ export class AutosizeVirtualScrollStrategy<
   /** @internal */
   private readonly _scrolledIndex$ = new ReplaySubject<number>(1);
   /** @internal */
-  scrolledIndex$ = this._scrolledIndex$.asObservable();
+  scrolledIndex$ = this._scrolledIndex$.pipe(distinctUntilChanged());
   /** @internal */
   private _scrolledIndex = 0;
   /** @internal */
@@ -200,6 +200,8 @@ export class AutosizeVirtualScrollStrategy<
   /** @internal */
   private scrollTop = 0;
   /** @internal */
+  private direction: 'up' | 'down' = 'down';
+  /** @internal */
   private anchorScrollTop = 0;
   /** @internal */
   private anchorItem = {
@@ -219,6 +221,8 @@ export class AutosizeVirtualScrollStrategy<
   private resizeObserver?: ResizeObserver;
   /** @internal */
   private viewsResized$ = new Subject<ResizeObserverEntry[]>();
+  /** @internal */
+  private readonly runwayStateChanged$ = new Subject<void>();
 
   /** @internal */
   private until$<A>(): MonoTypeOperatorFunction<A> {
@@ -232,6 +236,17 @@ export class AutosizeVirtualScrollStrategy<
   /** @internal */
   constructor(private differs: IterableDiffers, private ngZone: NgZone) {
     super();
+  }
+
+  /** @internal */
+  ngOnChanges(changes: SimpleChanges) {
+    if (
+      (changes['runwayItemsOpposite'] &&
+        !changes['runwayItemsOpposite'].firstChange) ||
+      (changes['runwayItems'] && !changes['runwayItems'].firstChange)
+    ) {
+      this.runwayStateChanged$.next();
+    }
   }
 
   /** @internal */
@@ -308,6 +323,9 @@ export class AutosizeVirtualScrollStrategy<
           }
         );
       }
+      if (!this._contentSize && this._virtualItems.length > 0) {
+        this.contentSize = this._virtualItems.length * this.tombstoneSize;
+      }
     });
   }
 
@@ -330,6 +348,7 @@ export class AutosizeVirtualScrollStrategy<
       distinctUntilChanged(),
       startWith(0),
       tap((_scrollTop) => {
+        this.direction = _scrollTop > this.scrollTop ? 'down' : 'up';
         this.scrollTop = _scrollTop;
       })
     );
@@ -341,6 +360,8 @@ export class AutosizeVirtualScrollStrategy<
       ),
       this.viewport!.containerSize$,
       onScroll$,
+      this._contentSize$.pipe(startWith(0), distinctUntilChanged()),
+      this.runwayStateChanged$.pipe(startWith(void 0)),
     ])
       .pipe(
         map(([length, containerHeight]) => {
@@ -362,7 +383,7 @@ export class AutosizeVirtualScrollStrategy<
             this.anchorItem,
             containerHeight
           );
-          if (delta < 0) {
+          if (this.direction === 'up') {
             range.start = Math.max(0, this.anchorItem.index - this.runwayItems);
             range.end = Math.min(
               length,
@@ -398,7 +419,6 @@ export class AutosizeVirtualScrollStrategy<
         const renderedRange = this.renderedRange;
         const adjustIndexWith = renderedRange.start;
         let scrolledIndex: number | null = null;
-        let remainingSize = 0;
         let position = 0;
         return merge(
           this.viewRepeater!.viewRendered$.pipe(
@@ -406,26 +426,14 @@ export class AutosizeVirtualScrollStrategy<
               const index = viewIndex + adjustIndexWith;
               if (idx === 0) {
                 position = this.calcInitialPosition(renderedRange);
-                for (let i = index; i < this.contentLength; i++) {
-                  remainingSize += this.getItemSize(i);
-                }
               }
-              remainingSize -= this.getItemSize(index);
               position += this.adjustElementPosition({
                 index,
                 position,
                 view,
               });
-              this.updateCachedRange(index);
               if (scrolledIndex == null && position > this.scrollTop) {
                 scrolledIndex = index;
-              }
-              if (scrolledIndex != null) {
-                this.scrolledIndex = scrolledIndex;
-              }
-              this.contentSize = position + remainingSize;
-              if (this.anchorScrollTop !== this.scrollTop) {
-                this.viewport!.scrollTo(this.anchorScrollTop);
               }
               this.viewRenderCallback.next({
                 index,
@@ -435,7 +443,18 @@ export class AutosizeVirtualScrollStrategy<
             })
           ),
           this.viewRepeater!.viewsRendered$.pipe(
-            // debounceTime(0, asapScheduler),
+            tap((views) => {
+              const index = views.length - 1 + adjustIndexWith;
+              this.updateCachedRange(index);
+              if (scrolledIndex != null) {
+                this.scrolledIndex = scrolledIndex;
+              }
+              this.contentSize =
+                position + this.getRemainingSizeFrom(index + 1);
+              if (this.anchorScrollTop !== this.scrollTop) {
+                this.viewport!.scrollTo(this.anchorScrollTop);
+              }
+            }),
             switchMap((views) =>
               this.observeViewSizes$(adjustIndexWith, views).pipe(
                 tap((lowestId) => {
@@ -445,26 +464,28 @@ export class AutosizeVirtualScrollStrategy<
                     end: renderedRange.end,
                   };
                   let position = this.calcInitialPosition(range);
+                  let index = i + adjustIndexWith;
                   for (i; i < views.length; i++) {
-                    const index = i + adjustIndexWith;
+                    index = i + adjustIndexWith;
                     position += this.adjustElementPosition({
                       view: views[i],
                       index,
                       position,
                     });
-                    if (
-                      position < this.scrollTop &&
-                      index >= this.scrolledIndex
-                    ) {
-                      this.scrolledIndex = index + 1;
-                    } else if (
-                      index < this.scrolledIndex &&
-                      position > this.scrollTop
-                    ) {
-                      this.scrolledIndex = index;
-                    }
                   }
-                  this.contentSize = position + remainingSize;
+                  if (
+                    position < this.scrollTop &&
+                    index >= this.scrolledIndex
+                  ) {
+                    this.scrolledIndex = index + 1;
+                  } else if (
+                    index < this.scrolledIndex &&
+                    position > this.scrollTop
+                  ) {
+                    this.scrolledIndex = index;
+                  }
+                  this.contentSize =
+                    position + this.getRemainingSizeFrom(index + 1);
                 })
               )
             )
@@ -594,13 +615,15 @@ export class AutosizeVirtualScrollStrategy<
           }
           const cachedId = elementCache.get(event.target);
           if (cachedId !== undefined) {
-            lowestResizedId = Math.min(
-              lowestResizedId ?? Number.MAX_SAFE_INTEGER,
-              cachedId
-            );
-            this._virtualItems[cachedId + adjustIndexWith].size = Math.ceil(
-              this.extractSize(event)
-            );
+            const adjustedId = cachedId + adjustIndexWith;
+            const size = Math.round(this.extractSize(event));
+            if (this._virtualItems[adjustedId].size !== size) {
+              lowestResizedId = Math.min(
+                lowestResizedId ?? Number.MAX_SAFE_INTEGER,
+                cachedId
+              );
+              this._virtualItems[adjustedId].size = size;
+            }
           }
         });
         if (lowestResizedId !== undefined) {
@@ -621,6 +644,14 @@ export class AutosizeVirtualScrollStrategy<
         return lowestId;
       })
     );
+  }
+
+  private getRemainingSizeFrom(from: number): number {
+    let remaining = 0;
+    for (let i = from; i < this.contentLength; i++) {
+      remaining += this.getItemSize(i);
+    }
+    return remaining;
   }
 
   /** @internal */
