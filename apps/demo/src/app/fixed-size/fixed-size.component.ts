@@ -11,7 +11,6 @@ import {
   RxVirtualScrollingModule,
 } from '@rx-angular/virtual-scrolling';
 import { Subject } from 'rxjs';
-import { map, shareReplay } from 'rxjs/operators';
 import { DataService } from '../data.service';
 
 @Component({
@@ -27,7 +26,12 @@ import { DataService } from '../data.service';
       [(runwayItemsOpposite)]="runwayItemsOpposite"
     ></demo-panel>
     <div style="flex: 1; max-width: 600px;">
-      <rx-virtual-scroll-viewport #viewport [itemSize]="50">
+      <rx-virtual-scroll-viewport
+        #viewport
+        [runwayItemsOpposite]="runwayItemsOpposite"
+        [runwayItems]="runwayItems"
+        [itemSize]="50"
+      >
         <div
           class="item"
           *rxVirtualFor="
