@@ -7,6 +7,7 @@ export interface Item {
   content: string;
   date: Date;
   status: '✔️' | '🌟' | '❌';
+  description: string;
 }
 
 const status = ['✔️', '🌟', '❌'];
@@ -16,8 +17,8 @@ function randomStatus(): '✔️' | '🌟' | '❌' {
   return status[betweenZeroAndTwo] as '✔️' | '🌟' | '❌';
 }
 
-function randomContent() {
-  return new Array(Math.max(1, Math.floor(Math.random() * 50)))
+function randomContent(minLength = 1, maxLength = 50) {
+  return new Array(Math.max(minLength, Math.floor(Math.random() * maxLength)))
     .fill('')
     .map(() => randomWord())
     .join(' ');
@@ -56,6 +57,7 @@ function generateItems(startId: number, amount: number): Item[] {
     content: randomContent(),
     status: randomStatus(),
     date: randomDate(),
+    description: Math.random() >= 0.5 ? randomContent(30, 50) : '',
   }));
 }
 

@@ -55,7 +55,7 @@ import { FormsModule } from '@angular/forms';
           <td>
             <input
               [ngModel]="runwayItems"
-              (ngModelChange)="runwayItemsChange.next($event)"
+              (ngModelChange)="runwayItemsChange.emit($event)"
               type="number"
               step="1"
               min="0"
@@ -63,11 +63,24 @@ import { FormsModule } from '@angular/forms';
           </td>
         </tr>
         <tr>
-          <td>Runway items opposite</td>
+          <td>Runway opposite items</td>
           <td>
             <input
               [ngModel]="runwayItemsOpposite"
-              (ngModelChange)="runwayItemsOppositeChange.next($event)"
+              (ngModelChange)="runwayItemsOppositeChange.emit($event)"
+              type="number"
+              min="0"
+              step="1"
+            />
+          </td>
+        </tr>
+        <tr>
+          <td>viewCache</td>
+          <td>
+            <input
+              [ngModel]="viewCache"
+              [ngModelOptions]="{ updateOn: 'blur' }"
+              (ngModelChange)="viewCacheChange.emit($event)"
               type="number"
               min="0"
               step="1"
@@ -105,6 +118,10 @@ import { FormsModule } from '@angular/forms';
         margin-bottom: 1rem;
       }
 
+      td button {
+        margin-left: 0.5rem;
+      }
+
       input {
         width: 75px;
       }
@@ -120,6 +137,8 @@ export class DemoPanelComponent {
   @Output() scrollToIndex = new EventEmitter<number>();
   @Input() runwayItemsOpposite = 5;
   @Output() runwayItemsOppositeChange = new EventEmitter<number>();
+  @Input() viewCache = 50;
+  @Output() viewCacheChange = new EventEmitter<number>();
   @Input() runwayItems = 20;
   @Output() runwayItemsChange = new EventEmitter<number>();
 

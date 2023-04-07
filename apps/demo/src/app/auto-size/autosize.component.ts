@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   NgZone,
@@ -21,33 +22,40 @@ import { DataService } from '../data.service';
     <div>
       <h3>Autosize Demo</h3>
     </div>
-    <demo-panel
-      [scrollToExperimental]="true"
-      (scrollToIndex)="viewport.scrollToIndex($event)"
-      [itemAmount]="(items$ | async).length"
-      [renderedItemsAmount]="renderedItems$ | async"
-      [scrolledIndex]="viewport.scrolledIndexChange | async"
-      [(runwayItems)]="runwayItems"
-      [(runwayItemsOpposite)]="runwayItemsOpposite"
-    ></demo-panel>
-    <div style="flex: 1; max-width: 600px;">
-      <rx-virtual-scroll-viewport
-        [runwayItems]="runwayItems"
-        [runwayItemsOpposite]="runwayItemsOpposite"
-        autosize
-        #viewport
-      >
-        <div
-          class="item"
-          *rxVirtualFor="let item of items$; renderCallback: renderCallback$"
+    <ng-container *ngIf="showViewport">
+      <demo-panel
+        [scrollToExperimental]="true"
+        (scrollToIndex)="viewport.scrollToIndex($event)"
+        [itemAmount]="(items$ | async).length"
+        [renderedItemsAmount]="renderedItems$ | async"
+        [scrolledIndex]="viewport.scrolledIndexChange | async"
+        [(runwayItems)]="runwayItems"
+        [(runwayItemsOpposite)]="runwayItemsOpposite"
+        [(viewCache)]="viewCache"
+      ></demo-panel>
+      <div style="flex: 1; max-width: 600px;">
+        <rx-virtual-scroll-viewport
+          [runwayItems]="runwayItems"
+          [runwayItemsOpposite]="runwayItemsOpposite"
+          autosize
+          #viewport
         >
-          <div>{{ item.id }}</div>
-          <div class="item__content">{{ item.content }}</div>
-          <div>{{ item.status }}</div>
-          <div class="item__date">{{ item.date | date }}</div>
-        </div>
-      </rx-virtual-scroll-viewport>
-    </div>
+          <div
+            class="item"
+            *rxVirtualFor="
+              let item of items$;
+              viewCacheSize: viewCache;
+              renderCallback: renderCallback$
+            "
+          >
+            <div>{{ item.id }}</div>
+            <div class="item__content">{{ item.content }}</div>
+            <div>{{ item.status }}</div>
+            <div class="item__date">{{ item.date | date }}</div>
+          </div>
+        </rx-virtual-scroll-viewport>
+      </div>
+    </ng-container>
   `,
   styles: [
     `
@@ -72,21 +80,29 @@ export class AutosizeComponent {
 
   renderedItems$: Subject<number> = new Subject<number>();
 
-  items$ = this.dataService.items$.pipe(
-    map((items) =>
-      items.map((item) => ({
-        ...item,
-        height: Math.floor(Math.random() * (350 - 35 + 1) + 35),
-      }))
-    ),
-    shareReplay({ refCount: true, bufferSize: 1 })
-  );
+  items$ = this.dataService.items$;
 
   runwayItems = 20;
   runwayItemsOpposite = 5;
+  showViewport = true;
+
+  private _viewCache = 50;
+  get viewCache() {
+    return this._viewCache;
+  }
+  set viewCache(cache: number) {
+    this._viewCache = cache;
+    this.showViewport = false;
+    this.cdRef.detectChanges();
+    Promise.resolve().then(() => {
+      this.showViewport = true;
+      this.cdRef.markForCheck();
+    });
+  }
 
   constructor(
     public dataService: DataService,
+    private cdRef: ChangeDetectorRef,
     private elementRef: ElementRef<HTMLElement>,
     private ngZone: NgZone
   ) {

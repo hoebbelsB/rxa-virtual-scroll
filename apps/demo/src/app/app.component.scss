@@ -17,6 +17,27 @@ h1, h2, h3 {
   margin-top: 0;
 }
 
+a {
+  text-decoration: none;
+  &:active, &:visited {
+    text-decoration: none;
+  }
+}
+
+button {
+  border: 1px solid var(--palette-primary-main);
+  border-radius: 4px;
+  padding: .15rem .5rem;
+  background: white;
+  color: var(--palette-primary-main);
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--palette-secondary-main);
+    color: var(--palette-secondary-main)
+  }
+}
+
 .virtual-scroll-root {
   display: flex;
   width: 100%;
@@ -30,19 +51,22 @@ h1, h2, h3 {
     padding: 0 .5rem;
     display: flex;
     flex-direction: column;
-    width: 120px;
+    width: 140px;
 
     .nav-item {
-      text-decoration: none;
       color: var(--palette-primary-main);
       padding: .5rem 1rem;
 
       &.active, &:hover {
         color: var(--palette-secondary-main);
       }
-      &:active, &:visited {
-        text-decoration: none;
-      }
+    }
+
+    .docs-link {
+      font-size: 18px;
+      font-weight: bold;
+      margin-top: 1rem;
+      padding-left: 0;
     }
   }
 
@@ -58,11 +82,12 @@ h1, h2, h3 {
   .item {
     display: grid;
     grid:
-          'id           content     status      date' /
+          'id           content     status      date'
+          'desc         desc        desc        desc' /
           max-content 1fr 20px 100px;
     grid-column-gap: 1rem;
     box-sizing: border-box;
-    border: 1px solid red;
+    border: 1px solid gray;
     width: 100%;
     padding: 0.5rem;
   }

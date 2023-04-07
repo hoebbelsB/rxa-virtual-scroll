@@ -6,18 +6,21 @@ import {
   ElementRef,
   NgZone,
 } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import {
-  FixedSizeVirtualScrollStrategyModule,
+  DynamicSizeVirtualScrollStrategyModule,
   RxVirtualScrollingModule,
 } from '@rx-angular/virtual-scrolling';
 import { Subject } from 'rxjs';
-import { DataService } from '../data.service';
+import { DataService, Item } from '../data.service';
 
 @Component({
-  selector: 'fixed-size',
+  selector: 'dynamic-size',
   template: `
-    <h3>Fixed Size Demo</h3>
+    <div>
+      <h3>Dynamic Size Demo</h3>
+    </div>
     <ng-container *ngIf="showViewport">
       <demo-panel
         (scrollToIndex)="viewport.scrollToIndex($event)"
@@ -30,15 +33,16 @@ import { DataService } from '../data.service';
       ></demo-panel>
       <div style="flex: 1; max-width: 600px;">
         <rx-virtual-scroll-viewport
-          #viewport
-          [runwayItemsOpposite]="runwayItemsOpposite"
           [runwayItems]="runwayItems"
-          [itemSize]="50"
+          [runwayItemsOpposite]="runwayItemsOpposite"
+          [dynamic]="itemSize"
+          #viewport
         >
           <div
             class="item"
+            [style.height.px]="itemSize(item)"
             *rxVirtualFor="
-              let item of dataService.items;
+              let item of items$;
               renderCallback: renderCallback$;
               viewCacheSize: viewCache
             "
@@ -47,12 +51,15 @@ import { DataService } from '../data.service';
             <div class="item__content">{{ item.content }}</div>
             <div>{{ item.status }}</div>
             <div class="item__date">{{ item.date | date }}</div>
+            <div class="item__description" *ngIf="item.description">
+              <div><strong>Long Description:</strong></div>
+              <div>{{ item.description }}</div>
+            </div>
           </div>
         </rx-virtual-scroll-viewport>
       </div>
     </ng-container>
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
       :host {
@@ -60,8 +67,12 @@ import { DataService } from '../data.service';
         flex-direction: column;
         height: 100%;
       }
-      .item {
-        height: 50px;
+      .demo-panel {
+        margin-bottom: 1rem;
+      }
+      .item__description {
+        height: 70px;
+        grid-area: desc;
         overflow: hidden;
       }
       .item__content {
@@ -71,9 +82,10 @@ import { DataService } from '../data.service';
       }
     `,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [DataService],
 })
-export class FixedSizeComponent {
+export class DynamicSizeComponent {
   readonly renderCallback$ = new Subject<any>();
 
   renderedItems$: Subject<number> = new Subject<number>();
@@ -98,6 +110,9 @@ export class FixedSizeComponent {
       this.cdRef.markForCheck();
     });
   }
+
+  itemSize = (item: Item) => (item.description ? 120 : 50);
+
   constructor(
     public dataService: DataService,
     private cdRef: ChangeDetectorRef,
@@ -120,13 +135,14 @@ import { DemoPanelModule } from '../demo-panel/demo-panel.component';
 @NgModule({
   imports: [
     RxVirtualScrollingModule,
-    FixedSizeVirtualScrollStrategyModule,
     CommonModule,
-    RouterModule.forChild([{ path: '', component: FixedSizeComponent }]),
+    DynamicSizeVirtualScrollStrategyModule,
+    RouterModule.forChild([{ path: '', component: DynamicSizeComponent }]),
+    FormsModule,
     DemoPanelModule,
   ],
   exports: [],
-  declarations: [FixedSizeComponent],
+  declarations: [DynamicSizeComponent],
   providers: [],
 })
-export class FixedSizeModule {}
+export class DyanmicSizeModule {}

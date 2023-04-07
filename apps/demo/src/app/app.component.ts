@@ -6,11 +6,18 @@ import { RouterModule } from '@angular/router';
   selector: 'rx-virtual-scroll-root',
   template: `
     <div class="nav">
+      <h3>Demos</h3>
       <a
         class="nav-item"
         [routerLink]="['demos/fixed-size']"
         [routerLinkActive]="'active'"
-        >Fixed size</a
+        >Fixed Size</a
+      >
+      <a
+        class="nav-item"
+        [routerLink]="['demos/dynamic-size']"
+        [routerLinkActive]="'active'"
+        >Dynamic Size</a
       >
       <a
         class="nav-item"
@@ -18,6 +25,9 @@ import { RouterModule } from '@angular/router';
         [routerLinkActive]="'active'"
         >Autosize</a
       >
+      <a class="nav-item docs-link" target="_blank" href="https://github.com">
+        🖺 Docs
+      </a>
     </div>
     <div class="content">
       <router-outlet></router-outlet>
@@ -41,6 +51,13 @@ export class AppComponent {}
         loadChildren: () =>
           import('./fixed-size/fixed-size.component').then(
             (m) => m.FixedSizeModule
+          ),
+      },
+      {
+        path: 'demos/dynamic-size',
+        loadChildren: () =>
+          import('./dynamic-size/dynamic-size.component').then(
+            (m) => m.DyanmicSizeModule
           ),
       },
       {
