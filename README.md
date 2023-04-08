@@ -31,7 +31,8 @@ elements with transforms." (@DasSurma)
 
 ## Demo
 
-Demo link WIP
+Check out the [Demo Application](https://hoebbelsb.github.io/rxa-virtual-scroll/). You can play around with
+all pre-packaged ScrollStrategies as well as control the majority of inputs.
 
 ## Features
 
@@ -178,6 +179,8 @@ They also share two inputs to define the amount of views to actually render on t
 The `FixedSizeVirtualScrollStrategy` positions views based on a fixed size per item. It is comparable to `@angular/cdk/scrolling` `FixedSizeVirtualScrollStrategy`,
 but with a high performant layouting technique.
 
+[Demo](https://hoebbelsb.github.io/rxa-virtual-scroll/demos/fixed-size)
+
 The default size can be configured directly as `@Input('itemSize')`.
 
 **Example**
@@ -213,6 +216,8 @@ In order to provide top runtime performance the `AutosizeVirtualScrollStrategy` 
 prevent DOM interactions whenever possible. Once a view was visited, its properties will be stored instead of re-read from the DOM
 again as this can potentially lead to unwanted forced reflows.
 
+[Demo](https://hoebbelsb.github.io/rxa-virtual-scroll/demos/autosize)
+
 **Example**
 
 ```html
@@ -234,6 +239,8 @@ again as this can potentially lead to unwanted forced reflows.
 The `DynamicSizeVirtualScrollStrategy` is very similar to the `AutosizeVirtualScrollStrategy`. Instead of pulling the size for each view, it calculates the size
 based on a user provided function of type `(item: T) => number`. Because it doesn't have to interact with the DOM in order to position views,
 the `DynamicSizeVirtualScrollStrategy` has a better runtime performance compared to the `AutosizeVirtualScrollStrategy`.
+
+[Demo](https://hoebbelsb.github.io/rxa-virtual-scroll/demos/dynamic-size)
 
 **Example**
 
