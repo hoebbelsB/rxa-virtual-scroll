@@ -18,7 +18,7 @@ concurrency:
     }}
   # Run merge workflows in sequence to prevent parallel deployments and releases
   # Cancel stale pull request runs in progress for the same branch
-  cancel-in-progress: ${{ github.event_name != 'push' }}action.yml
+  cancel-in-progress: ${{ github.event_name != 'push' }}
 
 jobs:
   ci:
