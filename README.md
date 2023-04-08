@@ -15,19 +15,17 @@ elements with transforms." (@DasSurma)
 
 ## Usage
 
- ```html
+```html
 <rx-virtual-scroll-viewport>
-  <div
-   [itemSize]="50"
-   *rxVirtualFor="let hero of heroes$;">
+  <div [itemSize]="50" *rxVirtualFor="let hero of heroes$;">
     <div>
       <div><strong>{{ hero.name }}</strong></div>
-      <div> {{ hero.id }}</div>
-      <div> {{ hero.description }}</div>
+      <div>{{ hero.id }}</div>
+      <div>{{ hero.description }}</div>
     </div>
   </div>
 </rx-virtual-scroll-viewport>
- ```
+```
 
 ## Demo
 
@@ -54,11 +52,10 @@ all pre-packaged ScrollStrategies as well as control the majority of inputs.
 - triggers change-detection on `EmbeddedView` level
 - Zone-agnostic, opt-out of `NgZone` with `patchZone`
 - 3 Configurable `RxVirtualScrollStrategy` providing the core logic to calculate the viewRange and position DOM
-    Nodes
+  Nodes
   - `FixedSizeVirtualScrollStrategy`
   - `AutosizeVirtualScrollStrategy`
   - `DynamicSizeVirtualScrollStrategy`
-
 
 # Docs
 
@@ -67,9 +64,9 @@ official `@angular/cdk/scrolling`.
 The API is heavily inspired by `@angular/cdk/scrolling` and is divided into multiple
 core components which have to be glued together:
 
-* `RxVirtualViewRepeater`, implemented by `RxVirtualFor`
-* `RxVirtualScrollViewport`, implemented by `RxVirtualScrollViewportComponent`
-* `RxVirtualScrollStrategy`, implemented by `AutosizeVirtualScrollStrategy`, `FixedSizeVirtualScrollStrategy` & `DynamicSizeVirtualScrollStrategy`
+- `RxVirtualViewRepeater`, implemented by `RxVirtualFor`
+- `RxVirtualScrollViewport`, implemented by `RxVirtualScrollViewportComponent`
+- `RxVirtualScrollStrategy`, implemented by `AutosizeVirtualScrollStrategy`, `FixedSizeVirtualScrollStrategy` & `DynamicSizeVirtualScrollStrategy`
 
 ## API
 
@@ -80,15 +77,14 @@ from the bound data.
 
 #### Inputs
 
-| Input             | Type                                                               | description                                                                                                                                                                                                                                                                                                                                        |
-|-------------------|--------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `trackBy`         | `keyof T` or `(index: number, item: T) => any`                     | Identifier function for items. `rxVirtualFor` provides a shorthand where you can name the property directly.                                                                                                                                                                                                                                       |
-| `patchZone`       | `boolean`                                                          | _default: `true`_ if set to `false`, the `RxVirtualForDirective` will operate out of `NgZone`. See [NgZone optimizations](https://www.rx-angular.io/docs/template/performance-issues/ngzone-optimizations)                                                                                                                                         |
-| `parent`          | `boolean`                                                          | _default: `true`_ if set to `false`, the `RxVirtualForDirective` won't inform its host component about changes being made to the template. More performant, `@ViewChild` and `@ContentChild` queries won't work. [Handling view and content queries](https://www.rx-angular.io/docs/template/performance-issues/handling-view-and-content-queries) |
-| `strategy`        | `Observable<RxStrategyNames \ string> \ RxStrategyNames \ string>` | _default: `normal`_ configure the `RxStrategyRenderStrategy` used to detect changes.                                                                                                                                                                                                                                                               |
-| `renderCallback`  | `Subject<U>`                                                       | giving the developer the exact timing when the `RxVirtualForDirective` created, updated, removed its template. Useful for situations where you need to know when rendering is done.                                                                                                                                                                |
-| `viewCacheSize`   | `number`                                                           | _default: `20`_ Controls the amount if views held in cache for later re-use when a user is scrolling the list If this is set to 0, `rxVirtualFor` won't cache any view, thus destroying & re-creating very often on scroll events.                                                                                                                 |
-
+| Input            | Type                                                               | description                                                                                                                                                                                                                                                                                                                                        |
+| ---------------- | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `trackBy`        | `keyof T` or `(index: number, item: T) => any`                     | Identifier function for items. `rxVirtualFor` provides a shorthand where you can name the property directly.                                                                                                                                                                                                                                       |
+| `patchZone`      | `boolean`                                                          | _default: `true`_ if set to `false`, the `RxVirtualForDirective` will operate out of `NgZone`. See [NgZone optimizations](https://www.rx-angular.io/docs/template/performance-issues/ngzone-optimizations)                                                                                                                                         |
+| `parent`         | `boolean`                                                          | _default: `true`_ if set to `false`, the `RxVirtualForDirective` won't inform its host component about changes being made to the template. More performant, `@ViewChild` and `@ContentChild` queries won't work. [Handling view and content queries](https://www.rx-angular.io/docs/template/performance-issues/handling-view-and-content-queries) |
+| `strategy`       | `Observable<RxStrategyNames \ string> \ RxStrategyNames \ string>` | _default: `normal`_ configure the `RxStrategyRenderStrategy` used to detect changes.                                                                                                                                                                                                                                                               |
+| `renderCallback` | `Subject<U>`                                                       | giving the developer the exact timing when the `RxVirtualForDirective` created, updated, removed its template. Useful for situations where you need to know when rendering is done.                                                                                                                                                                |
+| `viewCacheSize`  | `number`                                                           | _default: `20`_ Controls the amount if views held in cache for later re-use when a user is scrolling the list If this is set to 0, `rxVirtualFor` won't cache any view, thus destroying & re-creating very often on scroll events.                                                                                                                 |
 
 #### Context Variables
 
@@ -97,7 +93,7 @@ The following context variables are available for each template:
 **Static Context Variables (mirrored from `ngFor`)**
 
 | Variable Name | Type      | description                                          |
-|---------------|-----------|------------------------------------------------------|
+| ------------- | --------- | ---------------------------------------------------- |
 | `$implicit`   | `T`       | the default variable accessed by `let val`           |
 | `index`       | `number`  | current index of the item                            |
 | `count`       | `number`  | count of all items in the list                       |
@@ -109,7 +105,7 @@ The following context variables are available for each template:
 **Reactive Context Variables**
 
 | Variable Name | Type                                                           | description                                                                                                                                                                                                       |
-|---------------|----------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ------------- | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `item$`       | `Observable<T>`                                                | the same value as $implicit, but as `Observable`                                                                                                                                                                  |
 | `index$`      | `Observable<number>`                                           | index as `Observable`                                                                                                                                                                                             |
 | `count$`      | `Observable<number>`                                           | count as `Observable`                                                                                                                                                                                             |
@@ -123,7 +119,7 @@ The following context variables are available for each template:
 
 ```html
 <rx-virtual-scroll-viewport [itemSize]="50">
- <div
+  <div
     *rxVirtualFor="
       let item of observableItems$;
       let count = count;
@@ -156,7 +152,7 @@ all events to the consumer of `rxVirtualFor`.
 #### Outputs
 
 | Output                | Type                                         | description                                                                                                                                                                                                                                                                                                                                                     |
-|-----------------------|----------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| --------------------- | -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `viewRange`           | `ListRange: { start: number; end: number; }` | The range to be rendered by `*rxVirtualFor`. This value is determined by the provided `RxVirtualScrollStrategy`. It gives the user information about the range of items being actually rendered to the DOM. Note this value updates before the `renderCallback` kicks in, thus it is only in sync with the DOM when the next `renderCallback` emitted an event. |
 | `scrolledIndexChange` | `number`                                     | The index of the currently scrolled item. The scrolled item is the topmost item actually being visible to the user.                                                                                                                                                                                                                                             |
 
@@ -169,10 +165,9 @@ using css `transforms`.
 They also share two inputs to define the amount of views to actually render on the screen.
 
 | Input                 | Type     | description                                                                      |
-|-----------------------|----------|----------------------------------------------------------------------------------|
+| --------------------- | -------- | -------------------------------------------------------------------------------- |
 | `runwayItems`         | `number` | _default: `10`_ The amount of items to render upfront in scroll direction        |
 | `runwayItemsOpposite` | `number` | _default: `2`_ The amount of items to render upfront in reverse scroll direction |
-
 
 #### FixedSizeVirtualScrollStrategy
 
@@ -186,13 +181,8 @@ The default size can be configured directly as `@Input('itemSize')`.
 **Example**
 
 ```html
-<rx-virtual-scroll-viewport
-  [itemSize]="50"
->
-  <div
-    class="item"
-    *rxVirtualFor="let item of items$;"
-  >
+<rx-virtual-scroll-viewport [itemSize]="50">
+  <div class="item" *rxVirtualFor="let item of items$;">
     <div>{{ item.id }}</div>
     <div>{{ item.content }}</div>
     <div>{{ item.status }}</div>
@@ -222,10 +212,7 @@ again as this can potentially lead to unwanted forced reflows.
 
 ```html
 <rx-virtual-scroll-viewport autosize>
-  <div
-    class="item"
-    *rxVirtualFor="let item of items$;"
-  >
+  <div class="item" *rxVirtualFor="let item of items$;">
     <div>{{ item.id }}</div>
     <div>{{ item.content }}</div>
     <div>{{ item.status }}</div>
@@ -250,13 +237,8 @@ dynamicSize = (item: Item) => (item.description ? 120 : 50);
 ```
 
 ```html
-<rx-virtual-scroll-viewport
-  [dynamic]="dynamicSize"
->
-  <div
-    class="item"
-    *rxVirtualFor="let item of items$;"
-  >
+<rx-virtual-scroll-viewport [dynamic]="dynamicSize">
+  <div class="item" *rxVirtualFor="let item of items$;">
     <div>{{ item.id }}</div>
     <div>{{ item.content }}</div>
     <div>{{ item.status }}</div>
@@ -266,12 +248,11 @@ dynamicSize = (item: Item) => (item.description ? 120 : 50);
 </rx-virtual-scroll-viewport>
 ```
 
-
 ### Configuration
 
 #### RX_VIRTUAL_SCROLL_DEFAULT_OPTIONS
 
-By providing a `RX_VIRTUAL_SCROLL_DEFAULT_OPTIONS` token, you can pre-configure default settings for 
+By providing a `RX_VIRTUAL_SCROLL_DEFAULT_OPTIONS` token, you can pre-configure default settings for
 the directives of the `@rx-angular-addons/virtual-scrolling` package.
 
 ```ts
