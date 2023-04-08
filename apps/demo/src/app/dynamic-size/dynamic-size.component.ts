@@ -1,21 +1,11 @@
 import { CommonModule } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  ElementRef,
-  Inject,
-  NgZone,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import {
   DynamicSizeVirtualScrollStrategyModule,
-  RX_VIRTUAL_SCROLL_DEFAULT_OPTIONS,
-  RxVirtualScrollDefaultOptions,
   RxVirtualScrollingModule,
 } from '@rx-angular/virtual-scrolling';
-import { Subject } from 'rxjs';
 import { DataService, Item } from '../data.service';
 
 @Component({
@@ -24,20 +14,20 @@ import { DataService, Item } from '../data.service';
     <div>
       <h3>Dynamic Size Demo</h3>
     </div>
-    <ng-container *ngIf="showViewport">
+    <ng-container *ngIf="state.showViewport">
       <demo-panel
         (scrollToIndex)="viewport.scrollToIndex($event)"
-        [itemAmount]="(items$ | async).length"
-        [renderedItemsAmount]="renderedItems$ | async"
+        [itemAmount]="(state.items$ | async).length"
+        [renderedItemsAmount]="state.renderedItems$ | async"
         [scrolledIndex]="viewport.scrolledIndexChange | async"
-        [(runwayItems)]="runwayItems"
-        [(runwayItemsOpposite)]="runwayItemsOpposite"
-        [(viewCache)]="viewCache"
+        [(runwayItems)]="state.runwayItems"
+        [(runwayItemsOpposite)]="state.runwayItemsOpposite"
+        [(viewCache)]="state.viewCache"
       ></demo-panel>
       <div style="flex: 1; max-width: 600px;">
         <rx-virtual-scroll-viewport
-          [runwayItems]="runwayItems"
-          [runwayItemsOpposite]="runwayItemsOpposite"
+          [runwayItems]="state.runwayItems"
+          [runwayItemsOpposite]="state.runwayItemsOpposite"
           [dynamic]="itemSize"
           #viewport
         >
@@ -45,9 +35,9 @@ import { DataService, Item } from '../data.service';
             class="item"
             [style.height.px]="itemSize(item)"
             *rxVirtualFor="
-              let item of items$;
-              renderCallback: renderCallback$;
-              viewCacheSize: viewCache
+              let item of state.items$;
+              renderCallback: state.renderCallback$;
+              viewCacheSize: state.viewCache
             "
           >
             <div>{{ item.id }}</div>
@@ -86,56 +76,17 @@ import { DataService, Item } from '../data.service';
     `,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [DataService],
+  providers: [DataService, DemoComponentState],
 })
 export class DynamicSizeComponent {
-  readonly renderCallback$ = new Subject<any>();
-
-  renderedItems$: Subject<number> = new Subject<number>();
-
-  items$ = this.dataService.items$;
-
-  runwayItems = this.defaults.runwayItems;
-  runwayItemsOpposite = this.defaults.runwayItemsOpposite;
-
-  showViewport = true;
-
-  private _viewCache = this.defaults.viewCacheSize;
-  get viewCache() {
-    return this._viewCache as number;
-  }
-  set viewCache(cache: number) {
-    this._viewCache = cache;
-    this.showViewport = false;
-    this.cdRef.detectChanges();
-    Promise.resolve().then(() => {
-      this.showViewport = true;
-      this.cdRef.markForCheck();
-    });
-  }
-
   itemSize = (item: Item) => (item.description ? 120 : 50);
 
-  constructor(
-    public dataService: DataService,
-    private cdRef: ChangeDetectorRef,
-    private elementRef: ElementRef<HTMLElement>,
-    private ngZone: NgZone,
-    @Inject(RX_VIRTUAL_SCROLL_DEFAULT_OPTIONS)
-    private defaults: RxVirtualScrollDefaultOptions
-  ) {
-    this.renderCallback$.subscribe(() => {
-      this.ngZone.run(() =>
-        this.renderedItems$.next(
-          this.elementRef.nativeElement.querySelectorAll('.item').length
-        )
-      );
-    });
-  }
+  constructor(public state: DemoComponentState) {}
 }
 
 import { NgModule } from '@angular/core';
 import { DemoPanelModule } from '../demo-panel/demo-panel.component';
+import { DemoComponentState } from '../demo-component.state';
 
 @NgModule({
   imports: [
@@ -150,4 +101,4 @@ import { DemoPanelModule } from '../demo-panel/demo-panel.component';
   declarations: [DynamicSizeComponent],
   providers: [],
 })
-export class DyanmicSizeModule {}
+export class DynamicSizeModule {}

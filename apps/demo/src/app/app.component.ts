@@ -57,7 +57,7 @@ export class AppComponent {}
         path: 'demos/dynamic-size',
         loadChildren: () =>
           import('./dynamic-size/dynamic-size.component').then(
-            (m) => m.DyanmicSizeModule
+            (m) => m.DynamicSizeModule
           ),
       },
       {
