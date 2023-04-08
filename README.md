@@ -85,7 +85,7 @@ from the bound data.
 | `patchZone`       | `boolean`                                                          | _default: `true`_ if set to `false`, the `RxVirtualForDirective` will operate out of `NgZone`. See [NgZone optimizations](https://www.rx-angular.io/docs/template/performance-issues/ngzone-optimizations)                                                                                                                                         |
 | `parent`          | `boolean`                                                          | _default: `true`_ if set to `false`, the `RxVirtualForDirective` won't inform its host component about changes being made to the template. More performant, `@ViewChild` and `@ContentChild` queries won't work. [Handling view and content queries](https://www.rx-angular.io/docs/template/performance-issues/handling-view-and-content-queries) |
 | `strategy`        | `Observable<RxStrategyNames \ string> \ RxStrategyNames \ string>` | _default: `normal`_ configure the `RxStrategyRenderStrategy` used to detect changes.                                                                                                                                                                                                                                                               |
-| `renderCallback`  | `Subject<U>`                                                       | giving the developer the exact timing when the `LetDirective` created, updated, removed its template. Useful for situations where you need to know when rendering is done.                                                                                                                                                                         |
+| `renderCallback`  | `Subject<U>`                                                       | giving the developer the exact timing when the `RxVirtualForDirective` created, updated, removed its template. Useful for situations where you need to know when rendering is done.                                                                                                                                                                |
 | `viewCacheSize`   | `number`                                                           | _default: `20`_ Controls the amount if views held in cache for later re-use when a user is scrolling the list If this is set to 0, `rxVirtualFor` won't cache any view, thus destroying & re-creating very often on scroll events.                                                                                                                 |
 
 
@@ -118,10 +118,10 @@ The following context variables are available for each template:
 | `odd$`        | `Observable<boolean>`                                          | odd as `Observable`                                                                                                                                                                                               |
 | `select`      | `(keys: (keyof T)[], distinctByMap) => Observable<Partial<T>>` | returns a selection function which accepts an array of properties to pluck out of every list item. The function returns the selected properties of the current list item as distinct `Observable` key-value-pair. |
 
-**Use the context variables **
+**Use the context variables**
 
 ```html
-<rx-virtual-scroll-viewport>
+<rx-virtual-scroll-viewport [itemSize]="50">
  <div
     *rxVirtualFor="
       let item of observableItems$;
