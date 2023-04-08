@@ -2,7 +2,17 @@
   "name": "rx-virtual-scroll",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "prepare": "is-ci || husky install"
+  },
+  "lint-staged": {
+    "**/!(images)/**/*.{ts,js,html}": [
+      "eslint --fix --quiet"
+    ],
+    "**/*.{ts,js,html,scss,md,mdx,json}": [
+      "prettier --write"
+    ]
+  },
   "private": true,
   "dependencies": {
     "@angular/animations": "12.2.15",
@@ -43,9 +53,12 @@
     "eslint": "~8.15.0",
     "eslint-config-prettier": "8.1.0",
     "eslint-plugin-cypress": "^2.10.3",
+    "husky": "^8.0.3",
+    "is-ci": "^3.0.1",
     "jest": "28.1.1",
     "jest-environment-jsdom": "28.1.1",
     "jest-preset-angular": "~12.2.3",
+    "lint-staged": "^13.2.1",
     "ng-packagr": "12.2.7",
     "nx": "15.7.2",
     "postcss": "^8.4.5",
