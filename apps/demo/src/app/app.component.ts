@@ -25,7 +25,11 @@ import { RouterModule } from '@angular/router';
         [routerLinkActive]="'active'"
         >Autosize</a
       >
-      <a class="nav-item docs-link" target="_blank" href="https://github.com">
+      <a
+        class="nav-item docs-link"
+        target="_blank"
+        href="https://github.com/hoebbelsB/rxa-virtual-scroll/"
+      >
         🖺 Docs
       </a>
     </div>
