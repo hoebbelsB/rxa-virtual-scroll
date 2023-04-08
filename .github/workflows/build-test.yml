@@ -1,0 +1,76 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  # Group concurrency on workflow, then:
+  # - Is merge run? Group on branch name (`refs/heads/main`)
+  # - Is pull request? Group on pull request branch name, for example `feat/add-awesome-feature`
+  group: >-
+    ${{ github.workflow }}-${{
+      github.event_name == 'push'
+        && github.ref
+        || github.head_ref
+    }}
+  # Run merge workflows in sequence to prevent parallel deployments and releases
+  # Cancel stale pull request runs in progress for the same branch
+  cancel-in-progress: ${{ github.event_name != 'push' }}action.yml
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up dependencies
+        uses: ./.github/actions/setup
+      - run: pnpm nx format:check
+      - run: pnpm nx affected -t lint --parallel=3
+      - run: pnpm nx affected -t test --parallel=3 --configuration=ci
+      - run: pnpm nx affected -t build --parallel=3
+      - name: 'Upload demo artifact'
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v3
+        with:
+          name: demo
+          path: dist/apps/demo
+
+  deploy-demo:
+    runs-on: ubuntu-latest
+    # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
+    permissions:
+      pages: write # to deploy to Pages
+      id-token: write # to verify the deployment originates from an appropriate source
+    if: github.ref == 'refs/heads/main'
+
+    # Deploy to the github-pages environment
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    needs: [ci]
+
+    steps:
+      - name: Download demo app
+        uses: actions/download-artifact@v3
+        with:
+          name: demo
+          path: dist/apps/demo
+
+      - name: Set up GitHub Pages
+        uses: actions/configure-pages@v2
+
+      - name: Upload demo to GitHub Pages
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: dist/apps/demo
+
+      - name: Deploy docs to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
