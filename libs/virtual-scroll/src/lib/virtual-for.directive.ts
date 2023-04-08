@@ -4,12 +4,14 @@ import {
   ElementRef,
   EmbeddedViewRef,
   ErrorHandler,
+  Inject,
   Input,
   IterableDiffers,
   NgIterable,
   NgZone,
   OnDestroy,
   OnInit,
+  Optional,
   TemplateRef,
   TrackByFunction,
   ViewContainerRef,
@@ -28,6 +30,11 @@ import {
   RxVirtualScrollStrategy,
   RxVirtualViewRepeater,
 } from './model';
+import {
+  DEFAULT_VIEW_CACHE_SIZE,
+  RX_VIRTUAL_SCROLL_DEFAULT_OPTIONS,
+  RxVirtualScrollDefaultOptions,
+} from './virtual-scroll.config';
 import {
   createVirtualListManager,
   VirtualListManager,
@@ -278,7 +285,8 @@ export class RxVirtualFor<T, U extends NgIterable<T> = NgIterable<T>>
    * scrolling the list. If this is set to 0, `rxVirtualFor` won't cache any view,
    * thus destroying & re-creating very often on scroll events.
    */
-  @Input('rxVirtualForViewCacheSize') viewCacheSize = 50;
+  @Input('rxVirtualForViewCacheSize') viewCacheSize =
+    this.defaults?.viewCacheSize || DEFAULT_VIEW_CACHE_SIZE;
 
   /**
    * @description
@@ -502,7 +510,10 @@ export class RxVirtualFor<T, U extends NgIterable<T> = NgIterable<T>>
     private readonly templateRef: TemplateRef<RxVirtualForViewContext<T, U>>,
     private readonly viewContainerRef: ViewContainerRef,
     private strategyProvider: RxStrategyProvider,
-    private errorHandler: ErrorHandler
+    private errorHandler: ErrorHandler,
+    @Optional()
+    @Inject(RX_VIRTUAL_SCROLL_DEFAULT_OPTIONS)
+    private defaults?: RxVirtualScrollDefaultOptions
   ) {}
 
   /** @internal */
@@ -564,7 +575,7 @@ export class RxVirtualFor<T, U extends NgIterable<T> = NgIterable<T>>
         cdRef: this.cdRef,
         strategies: this.strategyProvider.strategies as any, // TODO: move strategyProvider
         defaultStrategyName: this.strategyProvider.primaryStrategy,
-        parent: !!this.renderParent,
+        parent: this.renderParent,
         patchZone: this.patchZone ? this.ngZone : false,
         errorHandler: this.errorHandler,
       },

@@ -1,18 +1,4 @@
 import {
-  switchMap,
-  distinctUntilChanged,
-  map,
-  startWith,
-  takeUntil,
-  tap,
-} from 'rxjs/operators';
-import {
-  ListRange,
-  RxVirtualForViewContext,
-  RxVirtualScrollViewport,
-  RxVirtualViewRepeater,
-} from '../model';
-import {
   Directive,
   EmbeddedViewRef,
   Input,
@@ -20,6 +6,9 @@ import {
   OnChanges,
   OnDestroy,
   SimpleChanges,
+  NgModule,
+  Optional,
+  Inject,
 } from '@angular/core';
 import {
   combineLatest,
@@ -27,7 +16,29 @@ import {
   Subject,
   MonoTypeOperatorFunction,
 } from 'rxjs';
-import { RxVirtualScrollStrategy } from '../model';
+import {
+  switchMap,
+  distinctUntilChanged,
+  map,
+  startWith,
+  takeUntil,
+  tap,
+} from 'rxjs/operators';
+
+import {
+  ListRange,
+  RxVirtualForViewContext,
+  RxVirtualScrollViewport,
+  RxVirtualViewRepeater,
+  RxVirtualScrollStrategy,
+} from '../model';
+import {
+  DEFAULT_ITEM_SIZE,
+  DEFAULT_RUNWAY_ITEMS,
+  DEFAULT_RUNWAY_ITEMS_OPPOSITE,
+  RX_VIRTUAL_SCROLL_DEFAULT_OPTIONS,
+  RxVirtualScrollDefaultOptions,
+} from '../virtual-scroll.config';
 
 /**
  * @Directive FixedSizeVirtualScrollStrategy
@@ -62,19 +73,30 @@ export class FixedSizeVirtualScrollStrategy<
    * @description
    * The size of the items in the virtually scrolled list
    */
-  @Input() itemSize = 50;
+  @Input()
+  set itemSize(itemSize: number) {
+    if (typeof itemSize === 'number') {
+      this._itemSize = itemSize;
+    }
+  }
+  get itemSize() {
+    return this._itemSize;
+  }
+
+  private _itemSize = DEFAULT_ITEM_SIZE;
 
   /**
    * @description
    * The amount of items to render upfront in scroll direction
    */
-  @Input() runwayItems = 20;
+  @Input() runwayItems = this.defaults?.runwayItems ?? DEFAULT_RUNWAY_ITEMS;
 
   /**
    * @description
    * The amount of items to render upfront in reverse scroll direction
    */
-  @Input() runwayItemsOpposite = 5;
+  @Input() runwayItemsOpposite =
+    this.defaults?.runwayItemsOpposite ?? DEFAULT_RUNWAY_ITEMS_OPPOSITE;
 
   /** @internal */
   private readonly runwayStateChanged$ = new Subject<void>();
@@ -113,6 +135,14 @@ export class FixedSizeVirtualScrollStrategy<
   private direction: 'up' | 'down' = 'down';
 
   private readonly detached$ = new Subject<void>();
+
+  constructor(
+    @Optional()
+    @Inject(RX_VIRTUAL_SCROLL_DEFAULT_OPTIONS)
+    private defaults?: RxVirtualScrollDefaultOptions
+  ) {
+    super();
+  }
 
   /** @internal */
   ngOnChanges(changes: SimpleChanges) {
@@ -256,8 +286,6 @@ export class FixedSizeVirtualScrollStrategy<
     element.style.transform = `translateY(${scrollTop}px)`;
   }
 }
-
-import { NgModule } from '@angular/core';
 
 @NgModule({
   imports: [],

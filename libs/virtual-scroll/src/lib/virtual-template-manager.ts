@@ -1,4 +1,4 @@
-import { distinctUntilChanged } from 'rxjs/operators';
+import { distinctUntilChanged, ignoreElements } from 'rxjs/operators';
 import {
   ListRange,
   ListTemplateChangeType,
@@ -22,9 +22,11 @@ import {
   Subject,
   NEVER,
   MonoTypeOperatorFunction,
+  concat,
 } from 'rxjs';
 import { catchError, filter, map, switchMap, tap } from 'rxjs/operators';
 import {
+  onStrategy,
   RxStrategyCredentials,
   strategyHandling,
 } from '@rx-angular/cdk/render-strategies';
@@ -217,7 +219,22 @@ export function createVirtualListManager<
               }
               _viewsRendered$.next(viewsRendered);
             }),
-            tap(() => notifyParent && injectingViewCdRef.detectChanges()),
+            switchMap((v) =>
+              concat(
+                of(v),
+                onStrategy(
+                  injectingViewCdRef,
+                  strategy,
+                  (_v, work, options) => {
+                    work(injectingViewCdRef, options.scope);
+                  },
+                  {
+                    scope:
+                      (injectingViewCdRef as any).context || injectingViewCdRef,
+                  }
+                ).pipe(ignoreElements())
+              )
+            ),
             handleError(),
             map(() => itemsToRender)
           );

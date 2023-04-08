@@ -1,3 +1,18 @@
+import {
+  Directive,
+  EmbeddedViewRef,
+  Inject,
+  Input,
+  IterableDiffer,
+  IterableDiffers,
+  NgIterable,
+  NgZone,
+  OnChanges,
+  OnDestroy,
+  Optional,
+  SimpleChanges,
+  NgModule,
+} from '@angular/core';
 import { coalesceWith } from '@rx-angular/cdk/coalescing';
 import {
   distinctUntilChanged,
@@ -7,24 +22,6 @@ import {
   takeUntil,
   tap,
 } from 'rxjs/operators';
-import {
-  ListRange,
-  RxVirtualScrollViewport,
-  RxVirtualScrollStrategy,
-  RxVirtualViewRepeater,
-} from '../model';
-import {
-  Directive,
-  EmbeddedViewRef,
-  Input,
-  IterableDiffer,
-  IterableDiffers,
-  NgIterable,
-  NgZone,
-  OnChanges,
-  OnDestroy,
-  SimpleChanges,
-} from '@angular/core';
 import {
   combineLatest,
   merge,
@@ -36,10 +33,23 @@ import {
   MonoTypeOperatorFunction,
 } from 'rxjs';
 
+import {
+  ListRange,
+  RxVirtualScrollViewport,
+  RxVirtualScrollStrategy,
+  RxVirtualViewRepeater,
+} from '../model';
+import {
+  DEFAULT_ITEM_SIZE,
+  DEFAULT_RUNWAY_ITEMS,
+  DEFAULT_RUNWAY_ITEMS_OPPOSITE,
+  RX_VIRTUAL_SCROLL_DEFAULT_OPTIONS,
+  RxVirtualScrollDefaultOptions,
+} from '../virtual-scroll.config';
+
 /** @internal */
 type VirtualViewItem = {
   size: number;
-  tombstone?: boolean;
 };
 
 /** @internal */
@@ -104,13 +114,14 @@ export class AutosizeVirtualScrollStrategy<
    * @description
    * The amount of items to render upfront in scroll direction
    */
-  @Input() runwayItems = 20;
+  @Input() runwayItems = this.defaults?.runwayItems ?? DEFAULT_RUNWAY_ITEMS;
 
   /**
    * @description
    * The amount of items to render upfront in reverse scroll direction
    */
-  @Input() runwayItemsOpposite = 5;
+  @Input() runwayItemsOpposite =
+    this.defaults?.runwayItemsOpposite ?? DEFAULT_RUNWAY_ITEMS_OPPOSITE;
 
   /**
    * @description
@@ -122,7 +133,7 @@ export class AutosizeVirtualScrollStrategy<
    * will be the size of a tombstone item being rendered before the actual item
    * is inserted into its position.
    */
-  @Input() tombstoneSize = 50;
+  @Input() tombstoneSize = this.defaults?.itemSize ?? DEFAULT_ITEM_SIZE;
 
   /**
    * @description
@@ -178,7 +189,7 @@ export class AutosizeVirtualScrollStrategy<
   /** @internal */
   private readonly _scrolledIndex$ = new ReplaySubject<number>(1);
   /** @internal */
-  scrolledIndex$ = this._scrolledIndex$.pipe(distinctUntilChanged());
+  readonly scrolledIndex$ = this._scrolledIndex$.pipe(distinctUntilChanged());
   /** @internal */
   private _scrolledIndex = 0;
   /** @internal */
@@ -234,7 +245,13 @@ export class AutosizeVirtualScrollStrategy<
   }
 
   /** @internal */
-  constructor(private differs: IterableDiffers, private ngZone: NgZone) {
+  constructor(
+    private differs: IterableDiffers,
+    private ngZone: NgZone,
+    @Optional()
+    @Inject(RX_VIRTUAL_SCROLL_DEFAULT_OPTIONS)
+    private defaults?: RxVirtualScrollDefaultOptions
+  ) {
     super();
   }
 
@@ -283,7 +300,7 @@ export class AutosizeVirtualScrollStrategy<
     const _index = Math.min(Math.max(index, 0), this.contentLength - 1);
     let offset = 0;
     for (let i = 0; i < _index; i++) {
-      offset += this._virtualItems[i].size || this.tombstoneSize;
+      offset += this.getItemSize(i);
     }
     this.viewport!.scrollTo(offset, behavior);
   }
@@ -699,8 +716,6 @@ export class AutosizeVirtualScrollStrategy<
     );
   }
 }
-
-import { NgModule } from '@angular/core';
 
 @NgModule({
   imports: [],

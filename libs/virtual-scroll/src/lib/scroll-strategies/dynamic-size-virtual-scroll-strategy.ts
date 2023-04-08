@@ -6,13 +6,16 @@ import {
 } from '../model';
 import {
   Directive,
+  Inject,
   Input,
   IterableDiffer,
   IterableDiffers,
   NgIterable,
-  NgZone,
+  OnChanges,
   OnDestroy,
+  Optional,
   SimpleChanges,
+  NgModule,
 } from '@angular/core';
 import {
   combineLatest,
@@ -28,6 +31,14 @@ import {
   takeUntil,
   tap,
 } from 'rxjs/operators';
+
+import {
+  DEFAULT_ITEM_SIZE,
+  DEFAULT_RUNWAY_ITEMS,
+  DEFAULT_RUNWAY_ITEMS_OPPOSITE,
+  RX_VIRTUAL_SCROLL_DEFAULT_OPTIONS,
+  RxVirtualScrollDefaultOptions,
+} from '../virtual-scroll.config';
 
 /** @internal */
 type VirtualViewItem = {
@@ -50,7 +61,7 @@ function removeFromArray(arr: any[], index: number): any {
   }
 }
 
-const defaultItemSize = () => 50;
+const defaultItemSize = () => DEFAULT_ITEM_SIZE;
 
 /**
  * @Directive DynamicSizeVirtualScrollStrategy
@@ -78,25 +89,35 @@ export class DynamicSizeVirtualScrollStrategy<
     U extends NgIterable<T> = NgIterable<T>
   >
   extends RxVirtualScrollStrategy<T, U>
-  implements OnDestroy
+  implements OnChanges, OnDestroy
 {
   /**
    * @description
    * The amount of items to render upfront in scroll direction
    */
-  @Input() runwayItems = 20;
+  @Input() runwayItems = this.defaults?.runwayItems ?? DEFAULT_RUNWAY_ITEMS;
 
   /**
    * @description
    * The amount of items to render upfront in reverse scroll direction
    */
-  @Input() runwayItemsOpposite = 5;
+  @Input() runwayItemsOpposite =
+    this.defaults?.runwayItemsOpposite ?? DEFAULT_RUNWAY_ITEMS_OPPOSITE;
 
   /**
    * @description
    * Function returning the size of an item
    */
-  @Input('dynamic') itemSize: (item: T) => number = defaultItemSize;
+  @Input('dynamic')
+  set itemSize(fn: (item: T) => number) {
+    if (fn) {
+      this._itemSizeFn = fn;
+    }
+  }
+  get itemSize() {
+    return this._itemSizeFn;
+  }
+  private _itemSizeFn: (item: T) => number = defaultItemSize;
 
   /** @internal */
   private viewport: RxVirtualScrollViewport | null = null;
@@ -177,7 +198,12 @@ export class DynamicSizeVirtualScrollStrategy<
   }
 
   /** @internal */
-  constructor(private differs: IterableDiffers, private ngZone: NgZone) {
+  constructor(
+    private differs: IterableDiffers,
+    @Optional()
+    @Inject(RX_VIRTUAL_SCROLL_DEFAULT_OPTIONS)
+    private defaults?: RxVirtualScrollDefaultOptions
+  ) {
     super();
   }
 
@@ -466,8 +492,6 @@ export class DynamicSizeVirtualScrollStrategy<
       : null;
   }
 }
-
-import { NgModule } from '@angular/core';
 
 @NgModule({
   imports: [],
