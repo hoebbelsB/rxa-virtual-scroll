@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
-import { RxVirtualFor } from './virtual-for.directive';
 
+import { RxVirtualFor } from './virtual-for.directive';
 import { RxVirtualScrollViewportComponent } from './virtual-scroll-viewport.component';
 
 @NgModule({

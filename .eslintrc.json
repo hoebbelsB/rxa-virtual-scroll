@@ -1,12 +1,14 @@
 {
   "root": true,
   "ignorePatterns": ["**/*"],
-  "plugins": ["@nrwl/nx"],
+  "plugins": ["@nrwl/nx", "unused-imports", "simple-import-sort"],
   "overrides": [
     {
       "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
       "rules": {
         "@typescript-eslint/no-non-null-assertion": "off",
+        "simple-import-sort/imports": "error",
+        "simple-import-sort/exports": "error",
         "@nrwl/nx/enforce-module-boundaries": [
           "error",
           {
@@ -28,7 +30,18 @@
       "parserOptions": {
         "project": "./tsconfig.base.json"
       },
-      "rules": {}
+      "rules": {
+        "unused-imports/no-unused-imports": "error",
+        "unused-imports/no-unused-vars": [
+          "warn",
+          {
+            "vars": "all",
+            "varsIgnorePattern": "^_",
+            "args": "after-used",
+            "argsIgnorePattern": "^_"
+          }
+        ]
+      }
     },
     {
       "files": ["*.js", "*.jsx"],

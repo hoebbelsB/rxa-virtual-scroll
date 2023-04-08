@@ -1,10 +1,3 @@
-import { distinctUntilChanged, ignoreElements } from 'rxjs/operators';
-import {
-  ListRange,
-  ListTemplateChangeType,
-  RenderSettings,
-  TemplateSettings,
-} from './model';
 import {
   EmbeddedViewRef,
   IterableChanges,
@@ -13,23 +6,31 @@ import {
   NgIterable,
   TrackByFunction,
 } from '@angular/core';
-import { RxListViewContext } from '@rx-angular/cdk/template';
-import {
-  combineLatest,
-  Observable,
-  of,
-  OperatorFunction,
-  Subject,
-  NEVER,
-  MonoTypeOperatorFunction,
-  concat,
-} from 'rxjs';
-import { catchError, filter, map, switchMap, tap } from 'rxjs/operators';
 import {
   onStrategy,
   RxStrategyCredentials,
   strategyHandling,
 } from '@rx-angular/cdk/render-strategies';
+import { RxListViewContext } from '@rx-angular/cdk/template';
+import {
+  combineLatest,
+  concat,
+  MonoTypeOperatorFunction,
+  NEVER,
+  Observable,
+  of,
+  OperatorFunction,
+  Subject,
+} from 'rxjs';
+import { distinctUntilChanged, ignoreElements } from 'rxjs/operators';
+import { catchError, filter, map, switchMap, tap } from 'rxjs/operators';
+
+import {
+  ListRange,
+  ListTemplateChangeType,
+  RenderSettings,
+  TemplateSettings,
+} from './model';
 import { getVirtualTemplateHandler } from './virtual-list-view-handler';
 
 export type VirtualListManager<T, C> = {

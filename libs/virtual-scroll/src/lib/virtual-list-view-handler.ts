@@ -5,12 +5,13 @@ import {
 } from '@rx-angular/cdk/render-strategies';
 import { RxListViewContext } from '@rx-angular/cdk/template';
 import { Observable, Subject } from 'rxjs';
+
 import {
   ListRange,
   ListTemplateChange,
   ListTemplateChanges,
-  TemplateSettings,
   ListTemplateChangeType,
+  TemplateSettings,
 } from './model';
 
 /**
