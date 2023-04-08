@@ -4,11 +4,14 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
+  Inject,
   NgZone,
 } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import {
   FixedSizeVirtualScrollStrategyModule,
+  RX_VIRTUAL_SCROLL_DEFAULT_OPTIONS,
+  RxVirtualScrollDefaultOptions,
   RxVirtualScrollingModule,
 } from '@rx-angular/virtual-scrolling';
 import { Subject } from 'rxjs';
@@ -80,14 +83,14 @@ export class FixedSizeComponent {
 
   items$ = this.dataService.items$;
 
-  runwayItems = 20;
-  runwayItemsOpposite = 5;
+  runwayItems = this.defaults.runwayItems;
+  runwayItemsOpposite = this.defaults.runwayItemsOpposite;
 
   showViewport = true;
 
-  private _viewCache = 50;
+  private _viewCache = this.defaults.viewCacheSize;
   get viewCache() {
-    return this._viewCache;
+    return this._viewCache as number;
   }
   set viewCache(cache: number) {
     this._viewCache = cache;
@@ -102,7 +105,9 @@ export class FixedSizeComponent {
     public dataService: DataService,
     private cdRef: ChangeDetectorRef,
     private elementRef: ElementRef<HTMLElement>,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    @Inject(RX_VIRTUAL_SCROLL_DEFAULT_OPTIONS)
+    private defaults: RxVirtualScrollDefaultOptions
   ) {
     this.renderCallback$.subscribe(() => {
       this.ngZone.run(() =>
