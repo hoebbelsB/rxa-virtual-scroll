@@ -1,4 +1,4 @@
-import { EmbeddedViewRef, IterableChanges } from '@angular/core';
+import { EmbeddedViewRef, IterableChanges, NgZone } from '@angular/core';
 import {
   onStrategy,
   RxStrategyCredentials,
@@ -25,7 +25,8 @@ export interface RxVirtualListTemplateManager<T, C> {
     items: T[],
     renderedRange: ListRange,
     strategy: RxStrategyCredentials,
-    count: number
+    count: number,
+    ngZone?: NgZone
   ): {
     insertedOrRemoved: boolean;
     changes: ListTemplateChange<T>[];
@@ -78,7 +79,8 @@ export function getVirtualTemplateHandler<C extends RxListViewContext<T>, T>({
     items: T[],
     renderedRange: ListRange,
     strategy: RxStrategyCredentials,
-    count: number
+    count: number,
+    ngZone?: NgZone
   ) {
     const listChanges = getListChanges(iterableChanges, items);
     const changes = listChanges[0].sort(([, payloadA], [, payloadB]) => {
@@ -155,7 +157,7 @@ export function getVirtualTemplateHandler<C extends RxListViewContext<T>, T>({
                       break;
                   }
                 },
-                {}
+                { ngZone }
               );
             })
           : [],

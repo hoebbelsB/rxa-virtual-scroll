@@ -33,7 +33,7 @@ export interface TemplateSettings<T, C, U> {
 export interface RenderSettings {
   cdRef: ChangeDetectorRef;
   parent: boolean;
-  patchZone: NgZone | false;
+  patchZone?: NgZone;
   strategies: RxStrategies<string>;
   defaultStrategyName: string;
   errorHandler?: ErrorHandler;
