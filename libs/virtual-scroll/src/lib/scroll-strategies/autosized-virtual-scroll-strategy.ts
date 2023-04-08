@@ -435,6 +435,7 @@ export class AutosizeVirtualScrollStrategy<
       switchMap(() => {
         const renderedRange = this.renderedRange;
         const adjustIndexWith = renderedRange.start;
+        const endIdx = Math.max(0, renderedRange.end - 1);
         let scrolledIndex: number | null = null;
         let position = 0;
         return merge(
@@ -457,21 +458,20 @@ export class AutosizeVirtualScrollStrategy<
                 view,
                 item,
               });
+              if (index === endIdx) {
+                this.updateCachedRange(index);
+                if (scrolledIndex != null) {
+                  this.scrolledIndex = scrolledIndex;
+                }
+                this.contentSize =
+                  position + this.getRemainingSizeFrom(index + 1);
+                if (this.anchorScrollTop !== this.scrollTop) {
+                  this.viewport!.scrollTo(this.anchorScrollTop);
+                }
+              }
             })
           ),
           this.viewRepeater!.viewsRendered$.pipe(
-            tap((views) => {
-              const index = views.length - 1 + adjustIndexWith;
-              this.updateCachedRange(index);
-              if (scrolledIndex != null) {
-                this.scrolledIndex = scrolledIndex;
-              }
-              this.contentSize =
-                position + this.getRemainingSizeFrom(index + 1);
-              if (this.anchorScrollTop !== this.scrollTop) {
-                this.viewport!.scrollTo(this.anchorScrollTop);
-              }
-            }),
             switchMap((views) =>
               this.observeViewSizes$(adjustIndexWith, views).pipe(
                 tap((lowestId) => {

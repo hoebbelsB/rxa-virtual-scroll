@@ -66,6 +66,7 @@ export function createVirtualListManager<
     strategies,
     cdRef: injectingViewCdRef,
     parent,
+    patchZone,
   } = renderSettings;
   const errorHandler = renderSettings.errorHandler;
   const strategyHandling$ = strategyHandling(defaultStrategyName, strategies);
@@ -84,7 +85,6 @@ export function createVirtualListManager<
   });
   const viewContainerRef = templateSettings.viewContainerRef;
 
-  let notifyParent = false;
   let partiallyFinished = false;
   let renderedRange: ListRange;
   const _viewsRendered$ = new Subject<EmbeddedViewRef<C>[]>();
@@ -199,10 +199,11 @@ export function createVirtualListManager<
             itemsToRender,
             renderedRange,
             strategy,
-            count
+            count,
+            patchZone
           );
           partiallyFinished = true;
-          notifyParent = insertedOrRemoved && parent;
+          const notifyParent = insertedOrRemoved && parent;
           _renderingStart$.next();
           return combineLatest(
             // emit after all changes are rendered
@@ -220,22 +221,26 @@ export function createVirtualListManager<
               }
               _viewsRendered$.next(viewsRendered);
             }),
-            switchMap((v) =>
-              concat(
-                of(v),
-                onStrategy(
-                  injectingViewCdRef,
-                  strategy,
-                  (_v, work, options) => {
-                    work(injectingViewCdRef, options.scope);
-                  },
-                  {
-                    scope:
-                      (injectingViewCdRef as any).context || injectingViewCdRef,
-                  }
-                ).pipe(ignoreElements())
-              )
-            ),
+            notifyParent
+              ? switchMap((v) =>
+                  concat(
+                    of(v),
+                    onStrategy(
+                      injectingViewCdRef,
+                      strategy,
+                      (_v, work, options) => {
+                        work(injectingViewCdRef, options.scope);
+                      },
+                      {
+                        ngZone: patchZone,
+                        scope:
+                          (injectingViewCdRef as any).context ||
+                          injectingViewCdRef,
+                      }
+                    ).pipe(ignoreElements())
+                  )
+                )
+              : (o$) => o$,
             handleError(),
             map(() => itemsToRender)
           );

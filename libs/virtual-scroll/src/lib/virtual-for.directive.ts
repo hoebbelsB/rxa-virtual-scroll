@@ -576,7 +576,7 @@ export class RxVirtualFor<T, U extends NgIterable<T> = NgIterable<T>>
         strategies: this.strategyProvider.strategies as any, // TODO: move strategyProvider
         defaultStrategyName: this.strategyProvider.primaryStrategy,
         parent: this.renderParent,
-        patchZone: this.patchZone ? this.ngZone : false,
+        patchZone: this.patchZone ? this.ngZone : undefined,
         errorHandler: this.errorHandler,
       },
       templateSettings: {
