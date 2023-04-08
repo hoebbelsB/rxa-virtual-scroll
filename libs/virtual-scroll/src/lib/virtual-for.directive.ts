@@ -16,15 +16,15 @@ import {
   TrackByFunction,
   ViewContainerRef,
 } from '@angular/core';
-import { RxListViewComputedContext } from '@rx-angular/cdk/template';
+import { coerceDistinctWith } from '@rx-angular/cdk/coercing';
 import {
   RxStrategyNames,
   RxStrategyProvider,
 } from '@rx-angular/cdk/render-strategies';
-import { coerceDistinctWith } from '@rx-angular/cdk/coercing';
-
+import { RxListViewComputedContext } from '@rx-angular/cdk/template';
 import { Observable, ReplaySubject, Subject } from 'rxjs';
 import { shareReplay, takeUntil } from 'rxjs/operators';
+
 import {
   RxVirtualForViewContext,
   RxVirtualScrollStrategy,

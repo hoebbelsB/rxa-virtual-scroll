@@ -1,7 +1,5 @@
 import {
-  ChangeDetectionStrategy,
   ChangeDetectorRef,
-  Component,
   ElementRef,
   Inject,
   Injectable,
@@ -12,6 +10,7 @@ import {
   RxVirtualScrollDefaultOptions,
 } from '@rx-angular/virtual-scrolling';
 import { Subject } from 'rxjs';
+
 import { DataService } from './data.service';
 
 @Injectable()

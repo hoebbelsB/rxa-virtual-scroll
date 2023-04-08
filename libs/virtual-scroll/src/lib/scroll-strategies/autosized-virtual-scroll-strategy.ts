@@ -6,14 +6,24 @@ import {
   IterableDiffer,
   IterableDiffers,
   NgIterable,
+  NgModule,
   NgZone,
   OnChanges,
   OnDestroy,
   Optional,
   SimpleChanges,
-  NgModule,
 } from '@angular/core';
 import { coalesceWith } from '@rx-angular/cdk/coalescing';
+import {
+  animationFrameScheduler,
+  combineLatest,
+  merge,
+  MonoTypeOperatorFunction,
+  Observable,
+  ReplaySubject,
+  scheduled,
+  Subject,
+} from 'rxjs';
 import {
   distinctUntilChanged,
   map,
@@ -22,21 +32,11 @@ import {
   takeUntil,
   tap,
 } from 'rxjs/operators';
-import {
-  combineLatest,
-  merge,
-  ReplaySubject,
-  scheduled,
-  Subject,
-  Observable,
-  animationFrameScheduler,
-  MonoTypeOperatorFunction,
-} from 'rxjs';
 
 import {
   ListRange,
-  RxVirtualScrollViewport,
   RxVirtualScrollStrategy,
+  RxVirtualScrollViewport,
   RxVirtualViewRepeater,
 } from '../model';
 import {

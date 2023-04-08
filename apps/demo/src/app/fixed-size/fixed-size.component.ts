@@ -5,6 +5,7 @@ import {
   FixedSizeVirtualScrollStrategyModule,
   RxVirtualScrollingModule,
 } from '@rx-angular/virtual-scrolling';
+
 import { DataService } from '../data.service';
 
 @Component({
@@ -71,8 +72,9 @@ export class FixedSizeComponent {
 }
 
 import { NgModule } from '@angular/core';
-import { DemoPanelModule } from '../demo-panel/demo-panel.component';
+
 import { DemoComponentState } from '../demo-component.state';
+import { DemoPanelModule } from '../demo-panel/demo-panel.component';
 
 @NgModule({
   imports: [

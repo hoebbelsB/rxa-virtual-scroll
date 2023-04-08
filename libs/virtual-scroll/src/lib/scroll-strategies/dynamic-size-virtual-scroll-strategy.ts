@@ -1,21 +1,15 @@
 import {
-  ListRange,
-  RxVirtualScrollViewport,
-  RxVirtualScrollStrategy,
-  RxVirtualViewRepeater,
-} from '../model';
-import {
   Directive,
   Inject,
   Input,
   IterableDiffer,
   IterableDiffers,
   NgIterable,
+  NgModule,
   OnChanges,
   OnDestroy,
   Optional,
   SimpleChanges,
-  NgModule,
 } from '@angular/core';
 import {
   combineLatest,
@@ -32,6 +26,12 @@ import {
   tap,
 } from 'rxjs/operators';
 
+import {
+  ListRange,
+  RxVirtualScrollStrategy,
+  RxVirtualScrollViewport,
+  RxVirtualViewRepeater,
+} from '../model';
 import {
   DEFAULT_ITEM_SIZE,
   DEFAULT_RUNWAY_ITEMS,

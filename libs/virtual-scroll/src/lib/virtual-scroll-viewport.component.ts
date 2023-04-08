@@ -14,12 +14,13 @@ import {
 import {
   defer,
   fromEvent,
+  merge,
   Observable,
   ReplaySubject,
   Subject,
-  merge,
 } from 'rxjs';
-import { distinctUntilChanged, takeUntil, map } from 'rxjs/operators';
+import { distinctUntilChanged, map, takeUntil } from 'rxjs/operators';
+
 import {
   RxVirtualScrollStrategy,
   RxVirtualScrollViewport,

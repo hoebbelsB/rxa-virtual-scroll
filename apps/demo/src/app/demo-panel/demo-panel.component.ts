@@ -6,9 +6,10 @@ import {
   Input,
   Output,
 } from '@angular/core';
-import { DataService } from '../data.service';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+
+import { DataService } from '../data.service';
 
 @Component({
   selector: 'demo-panel',

@@ -1,26 +1,26 @@
 import {
   Directive,
   EmbeddedViewRef,
+  Inject,
   Input,
   NgIterable,
+  NgModule,
   OnChanges,
   OnDestroy,
-  SimpleChanges,
-  NgModule,
   Optional,
-  Inject,
+  SimpleChanges,
 } from '@angular/core';
 import {
   combineLatest,
+  MonoTypeOperatorFunction,
   ReplaySubject,
   Subject,
-  MonoTypeOperatorFunction,
 } from 'rxjs';
 import {
-  switchMap,
   distinctUntilChanged,
   map,
   startWith,
+  switchMap,
   takeUntil,
   tap,
 } from 'rxjs/operators';
@@ -28,9 +28,9 @@ import {
 import {
   ListRange,
   RxVirtualForViewContext,
+  RxVirtualScrollStrategy,
   RxVirtualScrollViewport,
   RxVirtualViewRepeater,
-  RxVirtualScrollStrategy,
 } from '../model';
 import {
   DEFAULT_ITEM_SIZE,
