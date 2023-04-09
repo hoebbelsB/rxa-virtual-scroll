@@ -28,7 +28,7 @@ import { RouterModule } from '@angular/router';
       <a
         class="nav-item docs-link"
         target="_blank"
-        href="https://github.com/hoebbelsB/rxa-virtual-scroll/"
+        href="https://github.com/hoebbelsB/rxa-virtual-scroll/#readme"
       >
         🖺 Docs
       </a>
