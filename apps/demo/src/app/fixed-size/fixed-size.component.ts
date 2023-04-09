@@ -11,7 +11,7 @@ import { DataService } from '../data.service';
 @Component({
   selector: 'fixed-size',
   template: `
-    <h3>Fixed Size Demo</h3>
+    <h3>Fixed Size Strategy</h3>
     <ng-container *ngIf="state.showViewport">
       <demo-panel
         (scrollToIndex)="viewport.scrollToIndex($event)"

@@ -13,7 +13,7 @@ import { DataService } from '../data.service';
   selector: 'auto-size',
   template: `
     <div>
-      <h3>Autosize Demo</h3>
+      <h3>Autosize Strategy</h3>
     </div>
     <ng-container *ngIf="state.showViewport">
       <demo-panel

@@ -1,6 +1,6 @@
 {
-  "name": "@rx-angular/virtual-scroll",
-  "version": "1.0.0",
+  "name": "@rx-angular-addons/virtual-scrolling",
+  "version": "0.1.0",
   "peerDependencies": {
     "@angular/common": "^12.2.15",
     "@angular/core": "^12.2.15",

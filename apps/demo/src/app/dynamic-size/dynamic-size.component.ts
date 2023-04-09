@@ -13,7 +13,7 @@ import { DataService, Item } from '../data.service';
   selector: 'dynamic-size',
   template: `
     <div>
-      <h3>Dynamic Size Demo</h3>
+      <h3>Dynamic Size Strategy</h3>
     </div>
     <ng-container *ngIf="state.showViewport">
       <demo-panel
