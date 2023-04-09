@@ -34,7 +34,13 @@
             }
           ],
           "baseHref": "https://hoebbelsb.github.io/rxa-virtual-scroll/",
-          "outputHashing": "all"
+          "outputHashing": "all",
+          "fileReplacements": [
+            {
+              "replace": "apps/demo/src/environments/environment.ts",
+              "with": "apps/demo/src/environments/environment.prod.ts"
+            }
+          ]
         },
         "development": {
           "buildOptimizer": false,
