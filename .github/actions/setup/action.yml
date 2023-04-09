@@ -7,18 +7,14 @@ runs:
     - name: Derive appropriate SHAs for base and head for `nx affected` commands
       uses: nrwl/nx-set-shas@v3
 
-    - uses: pnpm/action-setup@v2
-      with:
-        version: 7
-
     - name: Use Node.js
       uses: actions/setup-node@v3
       with:
         node-version: 14
-        cache: 'pnpm'
+        cache: 'npm'
 
     - name: Install dependencies
       shell: bash
-      run: pnpm install
+      run: npm ci
       env:
         HUSKY_SKIP_INSTALL: 'true'
