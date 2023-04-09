@@ -33,7 +33,8 @@ jobs:
       - run: pnpm nx format:check
       - run: pnpm nx affected -t lint --parallel=3
       - run: pnpm nx affected -t test --parallel=3 --configuration=ci
-      - run: pnpm nx affected -t build
+      - run: pnpm nx affected -t build --exclude=demo
+      - run: pnpm nx build demo
       - name: 'Upload demo artifact'
         if: github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@v3
