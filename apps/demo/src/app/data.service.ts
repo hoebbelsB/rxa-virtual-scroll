@@ -63,7 +63,7 @@ function generateItems(startId: number, amount: number): Item[] {
 
 @Injectable()
 export class DataService {
-  items = generateItems(0, 500);
+  items = generateItems(0, 30000);
 
   items$ = new BehaviorSubject<Item[]>(this.items);
 
@@ -71,7 +71,7 @@ export class DataService {
     if (typeof amount === 'string') {
       amount = parseInt(amount);
     }
-    if (this.items.length + amount <= 10000) {
+    if (this.items.length + amount <= 100000) {
       this.items = this.items.concat(
         ...generateItems(this.items.length, amount)
       );

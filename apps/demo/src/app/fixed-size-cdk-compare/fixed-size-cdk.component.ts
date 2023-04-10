@@ -1,42 +1,43 @@
+import { ScrollingModule } from '@angular/cdk/scrolling';
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { RouterModule } from '@angular/router';
 import {
-  FixedSizeVirtualScrollStrategyModule,
-  RxVirtualScrollingModule,
-} from '@rx-angular/virtual-scrolling';
-
-import { DataService } from '../data.service';
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  QueryList,
+  ViewChildren,
+} from '@angular/core';
+import { FormsModule } from '@angular/forms';
 
 @Component({
-  selector: 'fixed-size',
+  selector: 'fixed-size-cdk',
   template: `
-    <h3>Fixed Size Strategy</h3>
+    <div>
+      <h3>@angular/cdk Fixed Size Strategy</h3>
+    </div>
     <ng-container *ngIf="state.showViewport">
       <demo-panel
-        #demoPanel
+        [withStrategy]="false"
+        [scrolledIndex]="viewport.scrolledIndexChange | async"
         (scrollToIndex)="viewport.scrollToIndex($event)"
         [itemAmount]="(state.items$ | async).length"
-        [renderedItemsAmount]="state.renderedItems$ | async"
-        [scrolledIndex]="viewport.scrolledIndexChange | async"
+        [renderedItemsAmount]="renderedItems$ | async"
         [(runwayItems)]="state.runwayItems"
         [(runwayItemsOpposite)]="state.runwayItemsOpposite"
         [(viewCache)]="state.viewCache"
       ></demo-panel>
       <div class="demo-list">
-        <rx-virtual-scroll-viewport
-          #viewport
-          [runwayItemsOpposite]="state.runwayItemsOpposite"
-          [runwayItems]="state.runwayItems"
+        <cdk-virtual-scroll-viewport
           [itemSize]="50"
+          #viewport
+          style="height: 100%"
         >
           <div
             class="item"
-            *rxVirtualFor="
-              let item of state.dataService.items;
-              renderCallback: state.renderCallback$;
-              viewCacheSize: state.viewCache;
-              strategy: demoPanel.strategyChange
+            #item
+            *cdkVirtualFor="
+              let item of state.items$;
+              templateCacheSize: state.viewCache
             "
           >
             <div>{{ item.id }}</div>
@@ -44,11 +45,10 @@ import { DataService } from '../data.service';
             <div>{{ item.status }}</div>
             <div class="item__date">{{ item.date | date }}</div>
           </div>
-        </rx-virtual-scroll-viewport>
+        </cdk-virtual-scroll-viewport>
       </div>
     </ng-container>
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
       :host {
@@ -78,27 +78,42 @@ import { DataService } from '../data.service';
       }
     `,
   ],
-  providers: [DataService, DemoComponentState],
+  providers: [DemoComponentState],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FixedSizeComponent {
+export class FixedSizeCdkComponent {
+  @ViewChildren('item') items!: QueryList<ElementRef<HTMLElement>>;
+
+  renderedItems$ = defer(() =>
+    from(Promise.resolve()).pipe(
+      switchMap(() =>
+        this.items.changes.pipe(
+          startWith(null),
+          map(() => this.items.length)
+        )
+      )
+    )
+  );
   constructor(public state: DemoComponentState) {}
 }
 
 import { NgModule } from '@angular/core';
+import { defer, from } from 'rxjs';
+import { map, startWith, switchMap } from 'rxjs/operators';
 
 import { DemoComponentState } from '../demo-component.state';
 import { DemoPanelModule } from '../demo-panel/demo-panel.component';
 
 @NgModule({
   imports: [
-    RxVirtualScrollingModule,
-    FixedSizeVirtualScrollStrategyModule,
+    ScrollingModule,
     CommonModule,
-    RouterModule.forChild([{ path: '', component: FixedSizeComponent }]),
+    FormsModule,
     DemoPanelModule,
+    ScrollingModule,
   ],
-  exports: [],
-  declarations: [FixedSizeComponent],
+  exports: [FixedSizeCdkComponent],
+  declarations: [FixedSizeCdkComponent],
   providers: [],
 })
-export class FixedSizeModule {}
+export class FixedSizeCdkModule {}

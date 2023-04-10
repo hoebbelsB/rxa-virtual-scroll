@@ -17,6 +17,7 @@ import { DataService } from '../data.service';
     </div>
     <ng-container *ngIf="state.showViewport">
       <demo-panel
+        #demoPanel
         [scrollToExperimental]="true"
         (scrollToIndex)="viewport.scrollToIndex($event)"
         [itemAmount]="(state.items$ | async).length"
@@ -26,7 +27,7 @@ import { DataService } from '../data.service';
         [(runwayItemsOpposite)]="state.runwayItemsOpposite"
         [(viewCache)]="state.viewCache"
       ></demo-panel>
-      <div style="flex: 1; max-width: 600px;">
+      <div class="demo-list">
         <rx-virtual-scroll-viewport
           [runwayItems]="state.runwayItems"
           [runwayItemsOpposite]="state.runwayItemsOpposite"
@@ -38,7 +39,8 @@ import { DataService } from '../data.service';
             *rxVirtualFor="
               let item of state.items$;
               viewCacheSize: state.viewCache;
-              renderCallback: state.renderCallback$
+              renderCallback: state.renderCallback$;
+              strategy: demoPanel.strategyChange
             "
           >
             <div>{{ item.id }}</div>
@@ -57,7 +59,15 @@ import { DataService } from '../data.service';
         flex-direction: column;
         height: 100%;
       }
+      .demo-list {
+        flex: 1;
+        max-width: 960px;
+        width: 100%;
+        box-sizing: border-box;
+      }
       .demo-panel {
+        max-width: 960px;
+        width: 100%;
         margin-bottom: 1rem;
       }
       .item:hover {
@@ -79,8 +89,8 @@ import { DemoPanelModule } from '../demo-panel/demo-panel.component';
 
 @NgModule({
   imports: [
-    RxVirtualScrollingModule,
     CommonModule,
+    RxVirtualScrollingModule,
     AutosizeVirtualScrollStrategyModule,
     RouterModule.forChild([{ path: '', component: AutosizeComponent }]),
     FormsModule,

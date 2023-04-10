@@ -1,42 +1,33 @@
+import { ScrollingModule } from '@angular/cdk/scrolling';
+import { ScrollingModule as ExperimentalScrolling } from '@angular/cdk-experimental/scrolling';
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { RouterModule } from '@angular/router';
-import {
-  FixedSizeVirtualScrollStrategyModule,
-  RxVirtualScrollingModule,
-} from '@rx-angular/virtual-scrolling';
-
-import { DataService } from '../data.service';
+import { FormsModule } from '@angular/forms';
 
 @Component({
-  selector: 'fixed-size',
+  selector: 'auto-size-cdk',
   template: `
-    <h3>Fixed Size Strategy</h3>
+    <div>
+      <h3>@angular/cdk Autosize Strategy</h3>
+    </div>
     <ng-container *ngIf="state.showViewport">
       <demo-panel
-        #demoPanel
+        [withStrategy]="false"
+        [scrollToExperimental]="true"
         (scrollToIndex)="viewport.scrollToIndex($event)"
         [itemAmount]="(state.items$ | async).length"
         [renderedItemsAmount]="state.renderedItems$ | async"
-        [scrolledIndex]="viewport.scrolledIndexChange | async"
         [(runwayItems)]="state.runwayItems"
         [(runwayItemsOpposite)]="state.runwayItemsOpposite"
         [(viewCache)]="state.viewCache"
       ></demo-panel>
       <div class="demo-list">
-        <rx-virtual-scroll-viewport
-          #viewport
-          [runwayItemsOpposite]="state.runwayItemsOpposite"
-          [runwayItems]="state.runwayItems"
-          [itemSize]="50"
-        >
+        <cdk-virtual-scroll-viewport autosize #viewport style="height: 100%">
           <div
             class="item"
-            *rxVirtualFor="
-              let item of state.dataService.items;
-              renderCallback: state.renderCallback$;
-              viewCacheSize: state.viewCache;
-              strategy: demoPanel.strategyChange
+            *cdkVirtualFor="
+              let item of state.items$;
+              templateCacheSize: state.viewCache
             "
           >
             <div>{{ item.id }}</div>
@@ -44,11 +35,10 @@ import { DataService } from '../data.service';
             <div>{{ item.status }}</div>
             <div class="item__date">{{ item.date | date }}</div>
           </div>
-        </rx-virtual-scroll-viewport>
+        </cdk-virtual-scroll-viewport>
       </div>
     </ng-container>
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
       :host {
@@ -67,20 +57,15 @@ import { DataService } from '../data.service';
         width: 100%;
         margin-bottom: 1rem;
       }
-      .item {
-        height: 50px;
-        overflow: hidden;
-      }
-      .item__content {
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden;
+      .item:hover {
+        height: 230px !important;
       }
     `,
   ],
-  providers: [DataService, DemoComponentState],
+  providers: [DemoComponentState],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FixedSizeComponent {
+export class AutosizeCdkComponent {
   constructor(public state: DemoComponentState) {}
 }
 
@@ -91,14 +76,15 @@ import { DemoPanelModule } from '../demo-panel/demo-panel.component';
 
 @NgModule({
   imports: [
-    RxVirtualScrollingModule,
-    FixedSizeVirtualScrollStrategyModule,
+    ScrollingModule,
+    ExperimentalScrolling,
     CommonModule,
-    RouterModule.forChild([{ path: '', component: FixedSizeComponent }]),
+    FormsModule,
     DemoPanelModule,
+    ScrollingModule,
   ],
-  exports: [],
-  declarations: [FixedSizeComponent],
+  exports: [AutosizeCdkComponent],
+  declarations: [AutosizeCdkComponent],
   providers: [],
 })
-export class FixedSizeModule {}
+export class AutosizeCdkModule {}

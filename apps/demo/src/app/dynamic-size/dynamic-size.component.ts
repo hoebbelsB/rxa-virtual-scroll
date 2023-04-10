@@ -17,6 +17,7 @@ import { DataService, Item } from '../data.service';
     </div>
     <ng-container *ngIf="state.showViewport">
       <demo-panel
+        #demoPanel
         (scrollToIndex)="viewport.scrollToIndex($event)"
         [itemAmount]="(state.items$ | async).length"
         [renderedItemsAmount]="state.renderedItems$ | async"
@@ -25,7 +26,7 @@ import { DataService, Item } from '../data.service';
         [(runwayItemsOpposite)]="state.runwayItemsOpposite"
         [(viewCache)]="state.viewCache"
       ></demo-panel>
-      <div style="flex: 1; max-width: 600px;">
+      <div class="demo-list">
         <rx-virtual-scroll-viewport
           [runwayItems]="state.runwayItems"
           [runwayItemsOpposite]="state.runwayItemsOpposite"
@@ -38,7 +39,8 @@ import { DataService, Item } from '../data.service';
             *rxVirtualFor="
               let item of state.items$;
               renderCallback: state.renderCallback$;
-              viewCacheSize: state.viewCache
+              viewCacheSize: state.viewCache;
+              strategy: demoPanel.strategyChange
             "
           >
             <div>{{ item.id }}</div>
@@ -61,7 +63,15 @@ import { DataService, Item } from '../data.service';
         flex-direction: column;
         height: 100%;
       }
+      .demo-list {
+        flex: 1;
+        max-width: 960px;
+        width: 100%;
+        box-sizing: border-box;
+      }
       .demo-panel {
+        max-width: 960px;
+        width: 100%;
         margin-bottom: 1rem;
       }
       .item__description {
