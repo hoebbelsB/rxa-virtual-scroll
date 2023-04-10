@@ -1,20 +1,21 @@
+import { ScrollingModule } from '@angular/cdk/scrolling';
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { RouterModule } from '@angular/router';
 import {
-  FixedSizeVirtualScrollStrategyModule,
+  AutosizeVirtualScrollStrategyModule,
   RxVirtualScrollingModule,
 } from '@rx-angular/virtual-scrolling';
 
-import { DataService } from '../data.service';
-
 @Component({
-  selector: 'fixed-size',
+  selector: 'auto-size-rxa',
   template: `
-    <h3>Fixed Size Strategy</h3>
+    <div>
+      <h3>Autosize Strategy</h3>
+    </div>
     <ng-container *ngIf="state.showViewport">
       <demo-panel
         #demoPanel
+        [scrollToExperimental]="true"
         (scrollToIndex)="viewport.scrollToIndex($event)"
         [itemAmount]="(state.items$ | async).length"
         [renderedItemsAmount]="state.renderedItems$ | async"
@@ -25,18 +26,18 @@ import { DataService } from '../data.service';
       ></demo-panel>
       <div class="demo-list">
         <rx-virtual-scroll-viewport
-          #viewport
-          [runwayItemsOpposite]="state.runwayItemsOpposite"
           [runwayItems]="state.runwayItems"
-          [itemSize]="50"
+          [runwayItemsOpposite]="state.runwayItemsOpposite"
+          autosize
+          #viewport
         >
           <div
             class="item"
             *rxVirtualFor="
-              let item of state.dataService.items;
-              renderCallback: state.renderCallback$;
+              let item of state.items$;
+              strategy: demoPanel.strategyChange;
               viewCacheSize: state.viewCache;
-              strategy: demoPanel.strategyChange
+              renderCallback: state.renderCallback$
             "
           >
             <div>{{ item.id }}</div>
@@ -48,7 +49,6 @@ import { DataService } from '../data.service';
       </div>
     </ng-container>
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
       :host {
@@ -67,20 +67,15 @@ import { DataService } from '../data.service';
         width: 100%;
         margin-bottom: 1rem;
       }
-      .item {
-        height: 50px;
-        overflow: hidden;
-      }
-      .item__content {
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden;
+      .item:hover {
+        height: 230px !important;
       }
     `,
   ],
-  providers: [DataService, DemoComponentState],
+  providers: [DemoComponentState],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FixedSizeComponent {
+export class AutosizeRxaComponent {
   constructor(public state: DemoComponentState) {}
 }
 
@@ -92,13 +87,13 @@ import { DemoPanelModule } from '../demo-panel/demo-panel.component';
 @NgModule({
   imports: [
     RxVirtualScrollingModule,
-    FixedSizeVirtualScrollStrategyModule,
+    AutosizeVirtualScrollStrategyModule,
     CommonModule,
-    RouterModule.forChild([{ path: '', component: FixedSizeComponent }]),
     DemoPanelModule,
+    ScrollingModule,
   ],
-  exports: [],
-  declarations: [FixedSizeComponent],
+  exports: [AutosizeRxaComponent],
+  declarations: [AutosizeRxaComponent],
   providers: [],
 })
-export class FixedSizeModule {}
+export class AutosizeRxaModule {}
