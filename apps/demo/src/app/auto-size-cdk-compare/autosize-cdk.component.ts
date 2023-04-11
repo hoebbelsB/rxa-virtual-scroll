@@ -48,12 +48,10 @@ import { FormsModule } from '@angular/forms';
       }
       .demo-list {
         flex: 1;
-        max-width: 960px;
         width: 100%;
         box-sizing: border-box;
       }
       .demo-panel {
-        max-width: 960px;
         width: 100%;
         margin-bottom: 1rem;
       }

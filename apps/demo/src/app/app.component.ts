@@ -6,18 +6,13 @@ import { NavigationEnd, Router, RouterModule } from '@angular/router';
   selector: 'rx-virtual-scroll-root',
   template: `
     <div class="nav" [class.nav--open]="navOpen">
+      <h2>RxAngular Virtual Scrolling</h2>
       <h3>Demos</h3>
       <a
         class="nav-item"
         [routerLink]="['demos/fixed-size']"
         [routerLinkActive]="'active'"
         >Fixed Size</a
-      >
-      <a
-        class="nav-item"
-        [routerLink]="['demos/fixed-size-cdk-compare']"
-        [routerLinkActive]="'active'"
-        >Fixed Size @angular/cdk comparison</a
       >
       <a
         class="nav-item"
@@ -31,11 +26,24 @@ import { NavigationEnd, Router, RouterModule } from '@angular/router';
         [routerLinkActive]="'active'"
         >Autosize</a
       >
+      <h3>CDK Comparison</h3>
+      <a
+        class="nav-item"
+        [routerLink]="['demos/fixed-size-cdk-compare']"
+        [routerLinkActive]="'active'"
+        >Fixed Size</a
+      >
+      <a
+        class="nav-item"
+        [routerLink]="['demos/dynamic-size-cdk-compare']"
+        [routerLinkActive]="'active'"
+        >Dynamic Size</a
+      >
       <a
         class="nav-item"
         [routerLink]="['demos/autosize-cdk-compare']"
         [routerLinkActive]="'active'"
-        >Autosize @angular/cdk comparison</a
+        >Autosize</a
       >
       <a
         class="nav-item docs-link"
@@ -93,48 +101,60 @@ export class AppComponent {
   declarations: [AppComponent],
   imports: [
     BrowserModule,
-    RouterModule.forRoot([
+    RouterModule.forRoot(
+      [
+        {
+          path: 'demos/fixed-size',
+          loadChildren: () =>
+            import('./fixed-size/fixed-size.component').then(
+              (m) => m.FixedSizeModule
+            ),
+        },
+        {
+          path: 'demos/fixed-size-cdk-compare',
+          loadChildren: () =>
+            import(
+              './fixed-size-cdk-compare/fixed-size-cdk-compare.component'
+            ).then((m) => m.FixedSizeCdkCompareModule),
+        },
+        {
+          path: 'demos/dynamic-size',
+          loadChildren: () =>
+            import('./dynamic-size/dynamic-size.component').then(
+              (m) => m.DynamicSizeModule
+            ),
+        },
+        {
+          path: 'demos/dynamic-size-cdk-compare',
+          loadChildren: () =>
+            import(
+              './dynamic-size-cdk-compare/dynamic-size-cdk-compare.component'
+            ).then((m) => m.DynamicSizeCdkCompareModule),
+        },
+        {
+          path: 'demos/autosize',
+          loadChildren: () =>
+            import('./auto-size/autosize.component').then(
+              (m) => m.AutosizeModule
+            ),
+        },
+        {
+          path: 'demos/autosize-cdk-compare',
+          loadChildren: () =>
+            import(
+              './auto-size-cdk-compare/autosize-cdk-compare.component'
+            ).then((m) => m.AutosizeCdkCompareModule),
+        },
+        {
+          path: '',
+          redirectTo: 'demos/fixed-size',
+          pathMatch: 'full',
+        },
+      ],
       {
-        path: 'demos/fixed-size',
-        loadChildren: () =>
-          import('./fixed-size/fixed-size.component').then(
-            (m) => m.FixedSizeModule
-          ),
-      },
-      {
-        path: 'demos/fixed-size-cdk-compare',
-        loadChildren: () =>
-          import(
-            './fixed-size-cdk-compare/fixed-size-cdk-compare.component'
-          ).then((m) => m.FixedSizeCdkCompareModule),
-      },
-      {
-        path: 'demos/dynamic-size',
-        loadChildren: () =>
-          import('./dynamic-size/dynamic-size.component').then(
-            (m) => m.DynamicSizeModule
-          ),
-      },
-      {
-        path: 'demos/autosize',
-        loadChildren: () =>
-          import('./auto-size/autosize.component').then(
-            (m) => m.AutosizeModule
-          ),
-      },
-      {
-        path: 'demos/autosize-cdk-compare',
-        loadChildren: () =>
-          import('./auto-size-cdk-compare/autosize-cdk-compare.component').then(
-            (m) => m.AutosizeCdkCompareModule
-          ),
-      },
-      {
-        path: '',
-        redirectTo: 'demos/fixed-size',
-        pathMatch: 'full',
-      },
-    ]),
+        useHash: true,
+      }
+    ),
   ],
   bootstrap: [AppComponent],
 })
