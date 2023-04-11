@@ -25,7 +25,7 @@
     "@angular/platform-browser": "12.2.15",
     "@angular/platform-browser-dynamic": "12.2.15",
     "@angular/router": "12.2.15",
-    "@nrwl/angular": "12.10.1",
+    "@nrwl/angular": "13.1.4",
     "@rx-angular/cdk": "^1.0.0-rc.4",
     "rxjs": "~6.6.7",
     "tslib": "^2.3.0",
