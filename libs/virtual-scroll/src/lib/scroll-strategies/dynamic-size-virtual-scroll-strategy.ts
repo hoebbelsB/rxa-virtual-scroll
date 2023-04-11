@@ -18,6 +18,7 @@ import {
   Subject,
 } from 'rxjs';
 import {
+  debounce,
   distinctUntilChanged,
   map,
   startWith,
@@ -32,6 +33,7 @@ import {
   RxVirtualScrollViewport,
   RxVirtualViewRepeater,
 } from '../model';
+import { unpatchedAnimationFrameTick } from '../util';
 import {
   DEFAULT_ITEM_SIZE,
   DEFAULT_RUNWAY_ITEMS,
@@ -142,7 +144,7 @@ export class DynamicSizeVirtualScrollStrategy<
   /** @internal */
   private readonly _renderedRange$ = new ReplaySubject<ListRange>(1);
   /** @internal */
-  renderedRange$ = this._renderedRange$.asObservable();
+  readonly renderedRange$ = this._renderedRange$.asObservable();
   /** @internal */
   private _renderedRange: ListRange = { start: 0, end: 0 };
   // range of items where size is known and doesn't need to be re-calculated
@@ -164,9 +166,6 @@ export class DynamicSizeVirtualScrollStrategy<
   private set scrolledIndex(index: number) {
     this._scrolledIndex$.next(index);
   }
-
-  /** @internal */
-  private containerSize = 0;
   /** @internal */
   private contentLength = 0;
   /** @internal */
@@ -312,8 +311,8 @@ export class DynamicSizeVirtualScrollStrategy<
       distinctUntilChanged()
     );
     const onScroll$ = this.viewport!.elementScrolled$.pipe(
+      debounce(() => unpatchedAnimationFrameTick()),
       map(() => this.viewport!.getScrollTop()),
-      distinctUntilChanged(),
       startWith(0),
       tap((_scrollTop) => {
         this.direction = _scrollTop > this.scrollTop ? 'down' : 'up';
@@ -331,12 +330,10 @@ export class DynamicSizeVirtualScrollStrategy<
         distinctUntilChanged()
       ),
       onScroll$,
-      this._contentSize$.pipe(startWith(0), distinctUntilChanged()),
       this.runwayStateChanged$.pipe(startWith(void 0)),
     ])
       .pipe(
         map(([length, containerHeight]) => {
-          this.containerSize = containerHeight;
           const range = { start: 0, end: 0 };
 
           const delta = this.scrollTop - this.anchorScrollTop;
@@ -447,6 +444,7 @@ export class DynamicSizeVirtualScrollStrategy<
       offset: delta,
     };
   }
+
   /** @internal */
   private calcInitialPosition(range: ListRange): number {
     let pos = 0;
