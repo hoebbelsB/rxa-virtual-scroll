@@ -326,7 +326,10 @@ export class DynamicSizeVirtualScrollStrategy<
           this.contentLength = length;
         })
       ),
-      this.viewport!.containerSize$,
+      this.viewport!.containerRect$.pipe(
+        map(({ height }) => height),
+        distinctUntilChanged()
+      ),
       onScroll$,
       this._contentSize$.pipe(startWith(0), distinctUntilChanged()),
       this.runwayStateChanged$.pipe(startWith(void 0)),

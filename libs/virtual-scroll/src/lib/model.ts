@@ -143,7 +143,7 @@ export abstract class RxVirtualScrollViewport {
   abstract rendered$: Observable<any>;
   abstract viewRange: Observable<ListRange>;
   abstract elementScrolled$: Observable<void>;
-  abstract containerSize$: Observable<number>;
+  abstract containerRect$: Observable<{ height: number; width: number }>;
   abstract getScrollTop(): number;
   abstract scrollTo(scrollTo: number, behavior?: ScrollBehavior): void;
 }

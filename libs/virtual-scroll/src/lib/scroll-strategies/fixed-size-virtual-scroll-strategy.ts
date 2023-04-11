@@ -218,7 +218,10 @@ export class FixedSizeVirtualScrollStrategy<
     );
     combineLatest([
       dataLengthChanged$,
-      this.viewport!.containerSize$,
+      this.viewport!.containerRect$.pipe(
+        map(({ height }) => height),
+        distinctUntilChanged()
+      ),
       onScroll$,
       this.runwayStateChanged$.pipe(startWith(void 0)),
     ])

@@ -124,8 +124,11 @@ export class RxVirtualScrollViewportComponent
     this._elementScrolled.asObservable() as unknown as Observable<void>;
 
   /** @internal */
-  private _containerSize$ = new ReplaySubject<number>(1);
-  readonly containerSize$ = this._containerSize$.pipe(distinctUntilChanged());
+  private _containerRect$ = new ReplaySubject<{
+    width: number;
+    height: number;
+  }>(1);
+  readonly containerRect$ = this._containerRect$.asObservable();
 
   /**
    * @description
@@ -166,10 +169,19 @@ export class RxVirtualScrollViewportComponent
   /** @internal */
   ngOnInit(): void {
     observeElementSize(this.elementRef.nativeElement, {
-      extract: (entries) => Math.round(entries[0].contentRect.height),
+      extract: (entries) => ({
+        height: Math.round(entries[0].contentRect.height),
+        width: Math.round(entries[0].contentRect.width),
+      }),
     })
-      .pipe(distinctUntilChanged(), takeUntil(this.destroy$))
-      .subscribe(this._containerSize$);
+      .pipe(
+        distinctUntilChanged(
+          ({ height: prevHeight, width: prevWidth }, { height, width }) =>
+            prevHeight === height && prevWidth === width
+        ),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(this._containerRect$);
   }
 
   ngAfterViewInit() {
