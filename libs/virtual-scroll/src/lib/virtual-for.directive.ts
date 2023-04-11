@@ -290,7 +290,7 @@ export class RxVirtualFor<T, U extends NgIterable<T> = NgIterable<T>>
 
   /**
    * @description
-   *  If `parent` is set to `true` (default to `true`), `*rxVirtualFor` will
+   *  If `parent` is set to `true` (default to `false`), `*rxVirtualFor` will
    *  automatically run change-detection for its parent component when its scheduled
    *  tasks are done in order to update any pending `@ContentChild` or `@ViewChild`
    *  relation to be updated according to the updated ViewContainer.
@@ -304,7 +304,7 @@ export class RxVirtualFor<T, U extends NgIterable<T> = NgIterable<T>>
    *        *rxVirtualFor="
    *          let item of items$;
    *          trackBy: trackItem;
-   *          parent: false;
+   *          parent: true;
    *        "
    *        [item]="item"
    *        autosized
@@ -322,8 +322,7 @@ export class RxVirtualFor<T, U extends NgIterable<T> = NgIterable<T>>
    *
    * @param renderParent
    */
-  @Input('rxVirtualForParent') renderParent =
-    this.strategyProvider.config.parent;
+  @Input('rxVirtualForParent') renderParent = false;
 
   /**
    * @description
