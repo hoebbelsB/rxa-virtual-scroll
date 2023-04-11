@@ -11,15 +11,8 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import {
-  defer,
-  fromEvent,
-  merge,
-  Observable,
-  ReplaySubject,
-  Subject,
-} from 'rxjs';
-import { distinctUntilChanged, map, takeUntil } from 'rxjs/operators';
+import { defer, fromEvent, Observable, ReplaySubject, Subject } from 'rxjs';
+import { distinctUntilChanged, takeUntil } from 'rxjs/operators';
 
 import {
   RxVirtualScrollStrategy,
@@ -54,8 +47,9 @@ declare const ngDevMode: boolean;
 @Component({
   selector: 'rx-virtual-scroll-viewport',
   template: `
-    <div #runway class="rxa-virtual-scroll-run-way"></div>
-    <ng-content></ng-content>
+    <div #runway class="rxa-virtual-scroll-run-way">
+      <ng-content></ng-content>
+    </div>
   `,
   providers: [
     {
@@ -67,20 +61,26 @@ declare const ngDevMode: boolean;
     `
       :host {
         display: block;
-        overflow-x: hidden;
-        overflow-y: scroll;
+        overflow: auto;
         -webkit-overflow-scrolling: touch;
         width: 100%;
         height: 100%;
         box-sizing: border-box;
-        contain: content;
+        contain: strict;
+      }
+
+      :host:not([autosize]) {
+        transform: translateZ(0);
+        will-change: scroll-position;
       }
 
       .rxa-virtual-scroll-run-way {
-        width: 1px;
-        height: 1px;
-        transition: transform 0.2s ease 0s;
         position: absolute;
+        top: 0;
+        left: 0;
+        contain: strict;
+        min-width: 100%;
+        transform: translateZ(0);
       }
     `,
   ],
@@ -107,7 +107,7 @@ export class RxVirtualScrollViewportComponent
 
   /** @internal */
   private _containerSize$ = new ReplaySubject<number>(1);
-  readonly containerSize$ = this._containerSize$.asObservable();
+  readonly containerSize$ = this._containerSize$.pipe(distinctUntilChanged());
 
   /**
    * @description
@@ -157,7 +157,7 @@ export class RxVirtualScrollViewportComponent
         .subscribe(this._elementScrolled);
     });
     observeElementSize(this.elementRef.nativeElement, {
-      extract: (entries) => entries[0].contentRect.height,
+      extract: (entries) => Math.round(entries[0].contentRect.height),
     })
       .pipe(distinctUntilChanged(), takeUntil(this.destroy$))
       .subscribe(this._containerSize$);
@@ -172,16 +172,8 @@ export class RxVirtualScrollViewportComponent
     }
     this.scrollStrategy.attach(this, this.viewRepeater);
     this.scrollStrategy.contentSize$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(distinctUntilChanged(), takeUntil(this.destroy$))
       .subscribe((size) => this.updateContentSize(size));
-    merge(
-      this.elementScrolled$.pipe(map(() => '')),
-      this.viewRepeater.viewsRendered$.pipe(map(() => 'transform 0.2s ease 0s'))
-    )
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((transition) => {
-        this.runway.nativeElement.style.transition = transition;
-      });
   }
 
   /** @internal */
@@ -191,7 +183,7 @@ export class RxVirtualScrollViewportComponent
   }
 
   updateContentSize(size: number): void {
-    this.runway.nativeElement.style.transform = `translate(0, ${size}px)`;
+    this.runway.nativeElement.style.height = `${size}px`;
   }
 
   elementScrolled(): Observable<Event> {
