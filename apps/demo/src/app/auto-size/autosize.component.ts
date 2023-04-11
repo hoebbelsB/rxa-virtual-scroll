@@ -18,7 +18,6 @@ import { DataService } from '../data.service';
     <ng-container *ngIf="state.showViewport">
       <demo-panel
         #demoPanel
-        [scrollToExperimental]="true"
         (scrollToIndex)="viewport.scrollToIndex($event)"
         [itemAmount]="(state.items$ | async).length"
         [renderedItemsAmount]="state.renderedItems$ | async"

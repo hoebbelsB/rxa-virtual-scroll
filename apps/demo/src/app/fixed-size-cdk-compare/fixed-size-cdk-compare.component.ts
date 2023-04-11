@@ -12,7 +12,7 @@ import { AutosizeRxaModule } from './fixed-size-rxa.component';
   selector: 'fixed-size-cdk-compare',
   template: `
     <div>
-      <h3>Fixed Size Strategy comparison</h3>
+      <h3>RxAngular Fixed Size Strategy vs CDK Fixed Size Strategy</h3>
     </div>
     <div class="demo-content">
       <fixed-size-rxa></fixed-size-rxa>

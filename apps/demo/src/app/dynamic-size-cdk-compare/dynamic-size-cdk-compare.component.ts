@@ -2,25 +2,21 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import {
-  AutosizeVirtualScrollStrategyModule,
-  RxVirtualScrollingModule,
-} from '@rx-angular/virtual-scrolling';
 
 import { DataService } from '../data.service';
 import { DemoPanelModule } from '../demo-panel/demo-panel.component';
-import { AutosizeCdkModule } from './autosize-cdk.component';
-import { AutosizeRxaModule } from './autosize-rxa.component';
+import { DynamicSizeCdkModule } from './dynamic-size-cdk.component';
+import { DynamicSizeRxaModule } from './dynamic-size-rxa.component';
 
 @Component({
-  selector: 'auto-size-cdk-compare',
+  selector: 'dynamic-size-cdk-compare',
   template: `
     <div>
-      <h3>RxAngular Autosize Strategy vs CDK Autosize Strategy</h3>
+      <h3>RxAngular Dynamic Size Strategy vs CDK Autosize Strategy</h3>
     </div>
     <div class="demo-content">
-      <auto-size-rxa></auto-size-rxa>
-      <auto-size-cdk></auto-size-cdk>
+      <dynamic-size-rxa></dynamic-size-rxa>
+      <dynamic-size-cdk></dynamic-size-cdk>
     </div>
   `,
   styles: [
@@ -59,23 +55,21 @@ import { AutosizeRxaModule } from './autosize-rxa.component';
   providers: [DataService],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AutosizeCdkCompareComponent {}
+export class DynamicSizeCdkCompareComponent {}
 
 @NgModule({
   imports: [
-    RxVirtualScrollingModule,
     CommonModule,
-    AutosizeVirtualScrollStrategyModule,
     RouterModule.forChild([
-      { path: '', component: AutosizeCdkCompareComponent },
+      { path: '', component: DynamicSizeCdkCompareComponent },
     ]),
     FormsModule,
     DemoPanelModule,
-    AutosizeCdkModule,
-    AutosizeRxaModule,
+    DynamicSizeCdkModule,
+    DynamicSizeRxaModule,
   ],
   exports: [],
-  declarations: [AutosizeCdkCompareComponent],
+  declarations: [DynamicSizeCdkCompareComponent],
   providers: [],
 })
-export class AutosizeCdkCompareModule {}
+export class DynamicSizeCdkCompareModule {}

@@ -84,6 +84,10 @@ button {
     flex-shrink: 0;
     box-sizing: border-box;
 
+    h3:not(:first-of-type) {
+      margin-top: 1rem;
+    }
+
     .nav-item {
       color: var(--palette-primary-main);
       padding: 0.5rem 1rem;
@@ -110,6 +114,12 @@ button {
     margin-bottom: 1.5rem;
     margin-right: 0.5rem;
     width: 100%;
+  }
+
+  rx-virtual-scroll-viewport {
+    .item {
+      position: absolute;
+    }
   }
 
   .item {

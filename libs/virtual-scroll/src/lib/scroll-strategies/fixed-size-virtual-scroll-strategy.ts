@@ -10,6 +10,7 @@ import {
   Optional,
   SimpleChanges,
 } from '@angular/core';
+import { coalesceWith } from '@rx-angular/cdk/coalescing';
 import {
   combineLatest,
   MonoTypeOperatorFunction,
@@ -32,6 +33,7 @@ import {
   RxVirtualScrollViewport,
   RxVirtualViewRepeater,
 } from '../model';
+import { unpatchedAnimationFrameTick } from '../util';
 import {
   DEFAULT_ITEM_SIZE,
   DEFAULT_RUNWAY_ITEMS,
@@ -209,6 +211,7 @@ export class FixedSizeVirtualScrollStrategy<
       tap((dataLength) => (this.contentSize = dataLength * this.itemSize))
     );
     const onScroll$ = this.viewport!.elementScrolled$.pipe(
+      coalesceWith(unpatchedAnimationFrameTick()),
       map(() => this.viewport!.getScrollTop()),
       startWith(0),
       tap((_scrollTop) => {
@@ -218,7 +221,10 @@ export class FixedSizeVirtualScrollStrategy<
     );
     combineLatest([
       dataLengthChanged$,
-      this.viewport!.containerSize$,
+      this.viewport!.containerRect$.pipe(
+        map(({ height }) => height),
+        distinctUntilChanged()
+      ),
       onScroll$,
       this.runwayStateChanged$.pipe(startWith(void 0)),
     ])
