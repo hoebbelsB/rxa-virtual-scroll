@@ -1,17 +1,17 @@
 import {
   AfterContentInit,
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   ContentChild,
   ElementRef,
-  NgZone,
   OnDestroy,
   OnInit,
   Optional,
   Output,
   ViewChild,
 } from '@angular/core';
-import { defer, fromEvent, Observable, ReplaySubject, Subject } from 'rxjs';
+import { defer, Observable, ReplaySubject, Subject } from 'rxjs';
 import { distinctUntilChanged, takeUntil } from 'rxjs/operators';
 
 import {
@@ -20,6 +20,7 @@ import {
   RxVirtualViewRepeater,
 } from './model';
 import { observeElementSize } from './observe-element-size';
+import { getZoneUnPatchedApi } from './util';
 
 /**
  * @description Will be provided through Terser global definitions by Angular CLI
@@ -47,7 +48,8 @@ declare const ngDevMode: boolean;
 @Component({
   selector: 'rx-virtual-scroll-viewport',
   template: `
-    <div #runway class="rxa-virtual-scroll-run-way">
+    <div #scrollViewport class="rx-virtual-scroll__viewport">
+      <div #runway class="rx-virtual-scroll__run-way"></div>
       <ng-content></ng-content>
     </div>
   `,
@@ -61,37 +63,53 @@ declare const ngDevMode: boolean;
     `
       :host {
         display: block;
-        overflow: auto;
-        -webkit-overflow-scrolling: touch;
         width: 100%;
         height: 100%;
         box-sizing: border-box;
         contain: strict;
       }
 
-      :host:not([autosize]) {
+      :host:not([autosize]) .rx-virtual-scroll__viewport {
         transform: translateZ(0);
         will-change: scroll-position;
       }
 
-      .rxa-virtual-scroll-run-way {
+      .rx-virtual-scroll__viewport {
+        contain: strict;
+        -webkit-overflow-scrolling: touch;
+        width: 100%;
         position: absolute;
         top: 0;
-        left: 0;
+        bottom: 0;
+        overflow: auto;
+      }
+
+      .rx-virtual-scroll__run-way {
+        width: 1px;
+        height: 1px;
         contain: strict;
-        min-width: 100%;
-        transform: translateZ(0);
+        position: absolute;
+        will-change: transform;
       }
     `,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RxVirtualScrollViewportComponent
-  implements OnInit, RxVirtualScrollViewport, AfterContentInit, OnDestroy
+  implements
+    OnInit,
+    RxVirtualScrollViewport,
+    AfterViewInit,
+    AfterContentInit,
+    OnDestroy
 {
   /** @internal */
   @ViewChild('runway', { static: true })
   private runway!: ElementRef<HTMLElement>;
+
+  /** @internal */
+  @ViewChild('scrollViewport', { static: true })
+  private scrollViewport!: ElementRef<HTMLElement>;
 
   /** @internal */
   @ContentChild(RxVirtualViewRepeater)
@@ -129,15 +147,13 @@ export class RxVirtualScrollViewportComponent
    */
   @Output()
   readonly scrolledIndexChange = this.scrollStrategy.scrolledIndex$;
-  /** @internal */
-  readonly nativeElement = this.elementRef.nativeElement;
+
   /** @internal */
   private readonly destroy$ = new Subject<void>();
 
   /** @internal */
   constructor(
     private elementRef: ElementRef<HTMLElement>,
-    private ngZone: NgZone,
     @Optional() private scrollStrategy: RxVirtualScrollStrategy<unknown>
   ) {
     if (ngDevMode && !scrollStrategy) {
@@ -149,18 +165,22 @@ export class RxVirtualScrollViewportComponent
 
   /** @internal */
   ngOnInit(): void {
-    this.ngZone.runOutsideAngular(() => {
-      fromEvent(this.elementRef.nativeElement, 'scroll', {
-        passive: true,
-      })
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(this._elementScrolled);
-    });
     observeElementSize(this.elementRef.nativeElement, {
       extract: (entries) => Math.round(entries[0].contentRect.height),
     })
       .pipe(distinctUntilChanged(), takeUntil(this.destroy$))
       .subscribe(this._containerSize$);
+  }
+
+  ngAfterViewInit() {
+    getZoneUnPatchedApi(this.scrollContainer(), 'addEventListener').call(
+      this.scrollContainer(),
+      'scroll',
+      this.scrollListener,
+      {
+        passive: true,
+      }
+    );
   }
 
   /** @internal */
@@ -178,32 +198,39 @@ export class RxVirtualScrollViewportComponent
 
   /** @internal */
   ngOnDestroy(): void {
+    getZoneUnPatchedApi(this.scrollContainer(), 'removeEventListener').call(
+      this.scrollContainer(),
+      'scroll',
+      this.scrollListener
+    );
     this.destroy$.next();
     this.scrollStrategy.detach();
-  }
-
-  updateContentSize(size: number): void {
-    this.runway.nativeElement.style.height = `${size}px`;
   }
 
   elementScrolled(): Observable<Event> {
     return this._elementScrolled.asObservable();
   }
 
-  scrollContainer(): ElementRef<HTMLElement> {
-    return this.elementRef;
+  scrollContainer(): HTMLElement {
+    return this.scrollViewport.nativeElement;
   }
 
   getScrollTop(): number {
-    return this.nativeElement.scrollTop;
+    return this.scrollContainer().scrollTop;
   }
 
   scrollTo(index: number, behavior?: ScrollBehavior): void {
     // TODO: implement more complex scroll scenarios
-    this.nativeElement.scrollTo({ top: index, behavior: behavior });
+    this.scrollContainer().scrollTo({ top: index, behavior: behavior });
   }
 
   scrollToIndex(index: number, behavior?: ScrollBehavior): void {
     this.scrollStrategy.scrollToIndex(index, behavior);
   }
+
+  protected updateContentSize(size: number): void {
+    this.runway.nativeElement.style.transform = `translate(0, ${size}px)`;
+  }
+
+  private scrollListener = () => this._elementScrolled.next();
 }
