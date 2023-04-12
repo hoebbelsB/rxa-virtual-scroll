@@ -432,9 +432,7 @@ puts the most pressure on the virtual scrollers.
 The RxVirtualScrolling approach to layout items is to absolutely position every view inside the viewport. Therefore, it sets the `transform` property for each managed item.
 The CDK approach instead transforms the viewport. The following video showcases the difference.
 
-
-![layout techniques](https://user-images.githubusercontent.com/4904455/231339763-58cfe543-7182-43b6-a6fe-9584211abc81.mp4)
-
+https://user-images.githubusercontent.com/4904455/231340169-f65efe6c-863d-49e8-9f4f-183bb38e1b2a.mp4
 
 ## Fixed Size Strategy
 
