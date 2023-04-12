@@ -2,6 +2,8 @@
 
 A **high performance** alternative to [`@angular/cdk/scrolling`](https://material.angular.io/cdk/scrolling/) virtual scrolling implementation.
 
+![rxa-vs-cdk](docs/images/rxa-vs-cdk.png)
+
 Instead of rendering every item provided, `rxVirtualFor` only renders what is currently visible to the user, thus providing
 excellent runtime performance for huge sets of data.
 
