@@ -9,6 +9,7 @@ export function unpatchedAnimationFrameTick(): Observable<void> {
   return new Observable<void>((observer) => {
     const tick = requestAnimationFrame(() => {
       observer.next();
+      observer.complete();
     });
     return () => {
       cancelAnimationFrame(tick);
