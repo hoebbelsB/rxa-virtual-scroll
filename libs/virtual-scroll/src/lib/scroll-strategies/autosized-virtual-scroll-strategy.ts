@@ -174,7 +174,7 @@ export class AutosizeVirtualScrollStrategy<
   private _renderedRange: ListRange = { start: 0, end: 0 };
   // range of items where size is known and doesn't need to be re-calculated
   /** @internal */
-  private _cachedRange: ListRange | null = null;
+  private _cachedSet = new Set<number>();
 
   /** @internal */
   private set renderedRange(range: ListRange) {
@@ -202,10 +202,19 @@ export class AutosizeVirtualScrollStrategy<
   }
 
   /**
+   * is set, when scrollToIndex is called and the scroll event touches
+   * the edge of the viewport at the bottom. This is the only event where
+   * we actually have to `guess` the scroll anchor and might end up having
+   * to adjust
+   * @internal
+   * */
+  private _scrollToEdgeIndex: number | null = null;
+
+  /**
    * is set, when scrollToIndex is called
    * @internal
    * */
-  private _scrollToIndex: number | null = null;
+  private _scrollToAnchor: AnchorItem | null = null;
 
   /** @internal */
   private containerSize = 0;
@@ -308,7 +317,18 @@ export class AutosizeVirtualScrollStrategy<
     for (let i = 0; i < _index; i++) {
       size += this.getItemSize(i);
     }
-    this._scrollToIndex = _index;
+    this._scrollToAnchor = {
+      index: _index,
+      offset: 0,
+    };
+    this._scrollToEdgeIndex = null;
+    if (size + this.containerSize > this._contentSize) {
+      this._scrollToEdgeIndex = _index;
+      this._scrollToAnchor = this.calculateAnchoredItem(
+        this._scrollToAnchor,
+        -Math.max(size + this.containerSize - this._contentSize)
+      );
+    }
     this.viewport!.scrollTo(size, behavior);
   }
 
@@ -324,9 +344,9 @@ export class AutosizeVirtualScrollStrategy<
       this.until$()
     ).subscribe(() => {
       // reset because we have no idea how items will behave
-      this._cachedRange = null;
       let i = 0;
       let size = 0;
+      this._cachedSet.clear();
       while (i < this.renderedRange.start) {
         this._virtualItems[i].size = 0;
         i++;
@@ -334,6 +354,7 @@ export class AutosizeVirtualScrollStrategy<
       }
       while (i >= this.renderedRange.start && i < this.renderedRange.end) {
         size += this._virtualItems[i].size;
+        this._cachedSet.add(i);
         i++;
       }
       while (i < this.contentLength - 1) {
@@ -347,7 +368,6 @@ export class AutosizeVirtualScrollStrategy<
       const changes = this.getDiffer(items)?.diff(items);
       if (changes) {
         // reset cache on update
-        this._cachedRange = null;
         changes.forEachOperation(
           (item, adjustedPreviousIndex, currentIndex) => {
             if (item.previousIndex == null) {
@@ -368,13 +388,17 @@ export class AutosizeVirtualScrollStrategy<
                   ? this._virtualItems.length - 1
                   : adjustedPreviousIndex;
               removeFromArray(this._virtualItems, removeIdx);
+              this._cachedSet.delete(removeIdx);
             } else if (adjustedPreviousIndex !== null) {
               this._virtualItems[currentIndex] =
                 this._virtualItems[adjustedPreviousIndex];
             }
           }
         );
-        // TODO: reset virtualItems on update as well?
+        changes.forEachIdentityChange(
+          ({ currentIndex }) =>
+            currentIndex && this._cachedSet.delete(currentIndex)
+        );
       }
       if (!this._contentSize && this._virtualItems.length > 0) {
         this.contentSize = this._virtualItems.length * this.tombstoneSize;
@@ -424,18 +448,24 @@ export class AutosizeVirtualScrollStrategy<
           this.containerSize = containerSize;
           const range = { start: 0, end: 0 };
           const delta = this.scrollTop - this.anchorScrollTop;
-          if (this.scrollTop == 0) {
-            this.anchorItem = { index: 0, offset: 0 };
+          if (this._scrollToAnchor) {
+            this.anchorItem = this._scrollToAnchor;
+            this._scrollToAnchor = null;
           } else {
-            this.anchorItem = this.calculateAnchoredItem(
-              this.anchorItem,
-              delta
-            );
+            // reset scrollToIndex after consequent scroll or any other update
+            if (this._scrollToEdgeIndex !== null) {
+              this._scrollToEdgeIndex = null;
+            }
+            if (this.scrollTop == 0) {
+              this.anchorItem = { index: 0, offset: 0 };
+            } else {
+              this.anchorItem = this.calculateAnchoredItem(
+                this.anchorItem,
+                delta
+              );
+            }
           }
-          if (!this._scrollToIndex) {
-            // wait until index gets properly resolved. calculated anchoritem can be off
-            this.scrolledIndex = this.anchorItem.index;
-          }
+          this.scrolledIndex = this.anchorItem.index;
           this.anchorScrollTop = this.scrollTop;
           this.lastScreenItem = this.calculateAnchoredItem(
             this.anchorItem,
@@ -486,9 +516,21 @@ export class AutosizeVirtualScrollStrategy<
         return merge(
           this.viewRepeater!.viewRendered$.pipe(
             tap(({ view, index: viewIndex, item }) => {
+              const adjustedIndex = viewIndex + adjustIndexWith;
+              // this most of the time causes a forced reflow per rendered view.
+              // it doesn't sound good, but it's still way more stable than
+              // having one large reflow in a microtask after the actual
+              // scheduler tick.
+              // Right here, we can insert work into the task which is currently
+              // executed as part of the concurrent scheduler tick.
+              // causing the forced reflow here, also makes it count for the
+              // schedulers frame budget. This way we will always run with the
+              // configured FPS. The only case where this is not true is when rendering 1 single view
+              // already explodes the budget
+              this.updateElementSize(view, adjustedIndex);
               renderedViews.push({
                 view,
-                index: viewIndex + adjustIndexWith,
+                index: adjustedIndex,
                 item,
               });
             }),
@@ -501,28 +543,20 @@ export class AutosizeVirtualScrollStrategy<
             // but here is def. room for improvement
             coalesceWith(unpatchedMicroTask()),
             map(() => {
-              // reading the DOM happens here
-              for (let i = 0; i < renderedViews.length; i++) {
-                const { view, index } = renderedViews[i];
-                this.updateElementSize({
-                  index,
-                  view,
-                });
-              }
               if (position === 0) {
                 position = this.calcInitialPosition(renderedRange);
               }
               let lastIndex = 0;
               let scrollTo = this.anchorScrollTop;
               // update DOM happens here
-              // iterating twice in order to have only 1 reflow instead of multiple
+              // layout should be stable by now, we are thrashing it again, though
               for (let i = 0; i < renderedViews.length; i++) {
                 const { view, index, item } = renderedViews[i];
                 const element = this.getElement(view);
                 this.positionElement(element, position);
-                if (this._scrollToIndex && index === this._scrollToIndex) {
+                if (index === this._scrollToEdgeIndex) {
                   scrollTo = position;
-                  this._scrollToIndex = null;
+                  this._scrollToEdgeIndex = null;
                 }
                 position += this._virtualItems[index].size;
                 if (scrolledIndex == null && position > this.scrollTop) {
@@ -536,31 +570,35 @@ export class AutosizeVirtualScrollStrategy<
                 });
               }
               renderedViews = [];
-              this.updateCachedRange(lastIndex);
-              if (
-                scrolledIndex != null &&
-                scrolledIndex !== this.scrolledIndex
-              ) {
-                this.scrolledIndex = scrolledIndex;
-              }
-              this.contentSize =
-                position + this.getRemainingSizeFrom(lastIndex + 1);
-              if (scrollTo !== this.scrollTop) {
-                const maxScrollTo = this._contentSize - this.containerSize;
+              // this condition only covers the edge case when we scroll to the
+              // lower edge of the viewport and we have to wait until the whole
+              // renderedRange actually got rendered
+              if (this._scrollToEdgeIndex === null) {
+                this.contentSize =
+                  position + this.getRemainingSizeFrom(lastIndex + 1);
                 if (
-                  scrollTo >= maxScrollTo &&
-                  Math.ceil(this.scrollTop) >= maxScrollTo
+                  scrolledIndex != null &&
+                  scrolledIndex !== this.scrolledIndex
                 ) {
-                  // just trigger re-calculation of the renderedRange in case this happens
-                  this.afterViewResized$.next();
-                } else {
-                  this.viewport!.scrollTo(scrollTo);
+                  this.scrolledIndex = scrolledIndex;
                 }
-              } else if (
-                position < this.containerSize &&
-                lastIndex < this.contentLength
-              ) {
-                this.afterViewResized$.next();
+                if (scrollTo !== this.scrollTop) {
+                  const maxScrollTo = this._contentSize - this.containerSize;
+                  if (
+                    scrollTo >= maxScrollTo &&
+                    Math.ceil(this.scrollTop) >= maxScrollTo
+                  ) {
+                    // just trigger re-calculation of the renderedRange in case this happens
+                    this.afterViewResized$.next();
+                  } else {
+                    this.viewport!.scrollTo(scrollTo);
+                  }
+                } else if (
+                  position < this.containerSize &&
+                  lastIndex < this.contentLength
+                ) {
+                  this.afterViewResized$.next();
+                }
               }
             })
           ),
@@ -667,23 +705,14 @@ export class AutosizeVirtualScrollStrategy<
   }
 
   /** @internal */
-  private updateElementSize({
-    index,
-    view,
-  }: {
-    view: EmbeddedViewRef<any>;
-    index: number;
-  }): number {
+  private updateElementSize(view: EmbeddedViewRef<any>, index: number): number {
     const oldSize = this._virtualItems[index].size;
-    const isCached =
-      oldSize &&
-      this._cachedRange &&
-      index >= this._cachedRange.start &&
-      index <= this._cachedRange.end;
+    const isCached = this._cachedSet.has(index) && oldSize > 0;
     const size = isCached
       ? oldSize
       : this.getElementSize(this.getElement(view));
     this._virtualItems[index] = { size };
+    this._cachedSet.add(index);
     return size;
   }
 
@@ -759,20 +788,6 @@ export class AutosizeVirtualScrollStrategy<
   private positionElement(element: HTMLElement, scrollTop: number): void {
     element.style.position = 'absolute';
     element.style.transform = `translateY(${scrollTop}px)`;
-  }
-  /** @internal */
-  private updateCachedRange(index: number): void {
-    if (!this._cachedRange) {
-      this._cachedRange = {
-        start: index,
-        end: index,
-      };
-    } else {
-      this._cachedRange = {
-        start: Math.min(this._cachedRange.start, index),
-        end: Math.max(this._cachedRange.end, index),
-      };
-    }
   }
   /** @internal */
   private getDiffer(values: U | null | undefined): IterableDiffer<T> | null {
