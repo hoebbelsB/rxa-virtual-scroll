@@ -531,9 +531,12 @@ correct position based on an index.
 **No throttling**
 
 For the `CDK AutoSizeVirtualScrollStrategy`, the same is true as for the comparison vs. the `DynamicSizeVirtualScrollStrategy`.
-The `RxAngular AutoSizeVirtualScrollStrategy` implementation easily maintains a stable framerate around 45fps. But, because it constantly needs to hit the `DOM` in order to
-read the dimensions and change the styles of the views, we already see heavy layouting and style recalcuation peaks. The implementation already tries to keep the amount of
-forced reflows at a minimum, right now 1 forced reflow per render cycle has to be done.
+The `RxAngular AutoSizeVirtualScrollStrategy` implementation easily maintains a stable framerate of 60fps. You see the reason why it can maintain this framerate in the
+comparison flameshots. The AutoSizeVirtualScrollStrategy puts all the layouting work into the RxAngular scheduler queue which will keep the framebudget for us.
+For each inserted view, the `AutoSizeVirtualScrollStrategy` will cause a forced reflow as it immediately reads its dimensions. It sounds like a disadvantage, but in reality
+the scrolling performance benefits from this approach. Anyway, that's why we such heavy `rendering` peaks (purple color).
+Nodes that were visited once are not queried again, scrolling the same path twice will differ in runtime performance. All consequent attempts should be as fast as the fixed or dynamic
+size implementations.
 
 | `@rx-angular-addons/virtual-scrolling`                                          | `@angular/cdk/scrolling`                                                        |
 | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
@@ -543,8 +546,8 @@ forced reflows at a minimum, right now 1 forced reflow per render cycle has to b
 
 For the `CDK AutoSizeVirtualScrollStrategy`, the same is true as for the comparison vs. the `DynamicSizeVirtualScrollStrategy`.
 
-The issues we've seen without throttling just get worse with throttling enabled for the `RxAngular AutoSizeVirtualScrollStrategy`. The DOM interaction is costly, no matter what.
-Still, the maintained frame rate is reasonable as well as the visual stability.
+Even with 4x CPU throttling enabled, the `RxAngular AutoSizeVirtualScrollStrategy` keeps a reasonable frame rate and only sometimes produces partially presented frames.
+Thanks to the concurrent strategies, users will never encounter long tasks while scrolling.
 
 | `@rx-angular-addons/virtual-scrolling`                                      | `@angular/cdk/scrolling`                                                    |
 | --------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
