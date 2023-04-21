@@ -6,12 +6,12 @@ import {
   ContentChild,
   ElementRef,
   OnDestroy,
-  OnInit,
   Optional,
   Output,
   ViewChild,
 } from '@angular/core';
-import { defer, Observable, ReplaySubject, Subject } from 'rxjs';
+import { getZoneUnPatchedApi } from '@rx-angular/cdk/internals/core';
+import { Observable, ReplaySubject, Subject } from 'rxjs';
 import { distinctUntilChanged, takeUntil } from 'rxjs/operators';
 
 import {
@@ -20,13 +20,14 @@ import {
   RxVirtualViewRepeater,
 } from './model';
 import { observeElementSize } from './observe-element-size';
-import { getZoneUnPatchedApi } from './util';
 
 /**
  * @description Will be provided through Terser global definitions by Angular CLI
  * during the production build.
  */
 declare const ngDevMode: boolean;
+
+const NG_DEV_MODE = typeof ngDevMode === 'undefined' || !!ngDevMode;
 
 /**
  * @Component RxVirtualScrollViewport
@@ -69,7 +70,8 @@ declare const ngDevMode: boolean;
         contain: strict;
       }
 
-      :host:not([autosize]) .rx-virtual-scroll__viewport {
+      :host:not(.rx-virtual-scroll-viewport--withSyncScrollbar)
+        .rx-virtual-scroll__viewport {
         transform: translateZ(0);
         will-change: scroll-position;
       }
@@ -93,11 +95,11 @@ declare const ngDevMode: boolean;
       }
     `,
   ],
+  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RxVirtualScrollViewportComponent
   implements
-    OnInit,
     RxVirtualScrollViewport,
     AfterViewInit,
     AfterContentInit,
@@ -114,9 +116,6 @@ export class RxVirtualScrollViewportComponent
   /** @internal */
   @ContentChild(RxVirtualViewRepeater)
   viewRepeater!: RxVirtualViewRepeater<unknown>;
-
-  /** @internal */
-  readonly rendered$ = defer(() => this.viewRepeater.rendered$);
 
   /** @internal */
   private _elementScrolled = new Subject<Event>();
@@ -159,15 +158,11 @@ export class RxVirtualScrollViewportComponent
     private elementRef: ElementRef<HTMLElement>,
     @Optional() private scrollStrategy: RxVirtualScrollStrategy<unknown>
   ) {
-    if (ngDevMode && !scrollStrategy) {
+    if (NG_DEV_MODE && !scrollStrategy) {
       throw Error(
         'Error: rx-virtual-scroll-viewport requires an `RxVirtualScrollStrategy` to be set.'
       );
     }
-  }
-
-  /** @internal */
-  ngOnInit(): void {
     observeElementSize(this.elementRef.nativeElement, {
       extract: (entries) => ({
         height: Math.round(entries[0].contentRect.height),
@@ -244,5 +239,5 @@ export class RxVirtualScrollViewportComponent
     this.runway.nativeElement.style.transform = `translate(0, ${size}px)`;
   }
 
-  private scrollListener = () => this._elementScrolled.next();
+  private scrollListener = (event: Event) => this._elementScrolled.next(event);
 }

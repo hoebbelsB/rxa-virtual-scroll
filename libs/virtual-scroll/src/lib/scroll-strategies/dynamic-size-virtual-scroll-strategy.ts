@@ -1,14 +1,10 @@
 import {
   Directive,
-  Inject,
+  inject,
   Input,
-  IterableDiffer,
-  IterableDiffers,
   NgIterable,
-  NgModule,
   OnChanges,
   OnDestroy,
-  Optional,
   SimpleChanges,
 } from '@angular/core';
 import {
@@ -39,7 +35,6 @@ import {
   DEFAULT_RUNWAY_ITEMS,
   DEFAULT_RUNWAY_ITEMS_OPPOSITE,
   RX_VIRTUAL_SCROLL_DEFAULT_OPTIONS,
-  RxVirtualScrollDefaultOptions,
 } from '../virtual-scroll.config';
 
 /** @internal */
@@ -85,6 +80,7 @@ const defaultItemSize = () => DEFAULT_ITEM_SIZE;
       useExisting: DynamicSizeVirtualScrollStrategy,
     },
   ],
+  standalone: true,
 })
 export class DynamicSizeVirtualScrollStrategy<
     T,
@@ -93,6 +89,10 @@ export class DynamicSizeVirtualScrollStrategy<
   extends RxVirtualScrollStrategy<T, U>
   implements OnChanges, OnDestroy
 {
+  private readonly defaults? = inject(RX_VIRTUAL_SCROLL_DEFAULT_OPTIONS, {
+    optional: true,
+  });
+
   /**
    * @description
    * The amount of items to render upfront in scroll direction
@@ -125,8 +125,6 @@ export class DynamicSizeVirtualScrollStrategy<
   private viewport: RxVirtualScrollViewport | null = null;
   /** @internal */
   private viewRepeater: RxVirtualViewRepeater<T, U> | null = null;
-  /** @internal */
-  private dataDiffer: IterableDiffer<T> | null = null;
 
   /** @internal */
   private readonly _contentSize$ = new ReplaySubject<number>(1);
@@ -167,7 +165,9 @@ export class DynamicSizeVirtualScrollStrategy<
     this._scrolledIndex$.next(index);
   }
   /** @internal */
-  private contentLength = 0;
+  private get contentLength(): number {
+    return this._virtualItems.length;
+  }
   /** @internal */
   private _virtualItems: VirtualViewItem[] = [];
   /** @internal */
@@ -190,20 +190,10 @@ export class DynamicSizeVirtualScrollStrategy<
   /** @internal */
   private readonly detached$ = new Subject<void>();
   /** @internal */
-  private readonly runwayStateChanged$ = new Subject<void>();
+  private readonly recalculateRange$ = new Subject<void>();
   /** @internal */
   private until$<A>(): MonoTypeOperatorFunction<A> {
     return (o$) => o$.pipe(takeUntil(this.detached$));
-  }
-
-  /** @internal */
-  constructor(
-    private differs: IterableDiffers,
-    @Optional()
-    @Inject(RX_VIRTUAL_SCROLL_DEFAULT_OPTIONS)
-    private defaults?: RxVirtualScrollDefaultOptions
-  ) {
-    super();
   }
 
   /** @internal */
@@ -213,7 +203,7 @@ export class DynamicSizeVirtualScrollStrategy<
         !changes['runwayItemsOpposite'].firstChange) ||
       (changes['runwayItems'] && !changes['runwayItems'].firstChange)
     ) {
-      this.runwayStateChanged$.next();
+      this.recalculateRange$.next();
     }
   }
 
@@ -253,63 +243,40 @@ export class DynamicSizeVirtualScrollStrategy<
 
   /** @internal */
   private maintainVirtualItems(): void {
-    this.viewRepeater!.values$.pipe(this.until$()).subscribe((items) => {
-      const changes = this.getDiffer(items)?.diff(items);
-      if (changes) {
-        changes.forEachOperation(
-          (change, adjustedPreviousIndex, currentIndex) => {
-            if (change.previousIndex == null) {
-              const entry = {
-                size: this.itemSize(change.item),
-              };
-              if (
-                currentIndex !== null &&
-                currentIndex < this._virtualItems.length
-              ) {
-                this._virtualItems.splice(currentIndex, 0, entry);
-              } else {
-                this._virtualItems.push(entry);
-              }
-            } else if (currentIndex == null) {
-              const removeIdx =
-                adjustedPreviousIndex == null
-                  ? this._virtualItems.length - 1
-                  : adjustedPreviousIndex;
-              removeFromArray(this._virtualItems, removeIdx);
-            } else if (adjustedPreviousIndex !== null) {
-              this._virtualItems[currentIndex] =
-                this._virtualItems[adjustedPreviousIndex];
+    this.viewRepeater!.values$.pipe(this.until$()).subscribe((data) => {
+      if (!data) {
+        this._virtualItems = [];
+        this.contentSize = 0;
+        this.recalculateRange$.next();
+      } else {
+        const dataArr = Array.isArray(data) ? data : Array.from(data);
+        let shouldRecalculateRange = false;
+        let contentSize = 0;
+        for (let i = 0; i < dataArr.length; i++) {
+          const oldSize = this._virtualItems[i]?.size;
+          const newSize = this.itemSize(dataArr[i]);
+          contentSize += newSize;
+          if (oldSize === undefined || oldSize !== newSize) {
+            this._virtualItems[i] = { size: newSize };
+            if (
+              !shouldRecalculateRange &&
+              (!this.contentSize ||
+                (i >= this.renderedRange.start && i < this.renderedRange.end))
+            ) {
+              shouldRecalculateRange = true;
             }
           }
-        );
-        changes.forEachIdentityChange((record) => {
-          this._virtualItems[record.currentIndex as number] = {
-            size: this.itemSize(record.item),
-          };
-        });
-        let contentSize = 0;
-        for (let i = 0; i < this._virtualItems.length; i++) {
-          contentSize += this._virtualItems[i].size;
         }
         this.contentSize = contentSize;
+        if (shouldRecalculateRange) {
+          this.recalculateRange$.next();
+        }
       }
     });
   }
 
   /** @internal */
   private calcRenderedRange(): void {
-    const dataLengthChanged$ = this.viewRepeater!.values$.pipe(
-      map(
-        (values) =>
-          (Array.isArray(values)
-            ? values
-            : values != null
-            ? Array.from(values)
-            : []
-          ).length
-      ),
-      distinctUntilChanged()
-    );
     const onScroll$ = this.viewport!.elementScrolled$.pipe(
       debounce(() => unpatchedAnimationFrameTick()),
       map(() => this.viewport!.getScrollTop()),
@@ -320,21 +287,17 @@ export class DynamicSizeVirtualScrollStrategy<
       })
     );
     combineLatest([
-      dataLengthChanged$.pipe(
-        tap((length) => {
-          this.contentLength = length;
-        })
-      ),
       this.viewport!.containerRect$.pipe(
         map(({ height }) => height),
         distinctUntilChanged()
       ),
       onScroll$,
-      this.runwayStateChanged$.pipe(startWith(void 0)),
+      this.recalculateRange$.pipe(startWith(void 0)),
     ])
       .pipe(
-        map(([length, containerHeight]) => {
+        map(([containerHeight]) => {
           const range = { start: 0, end: 0 };
+          const length = this.contentLength;
 
           const delta = this.scrollTop - this.anchorScrollTop;
           if (this.scrollTop == 0) {
@@ -386,23 +349,13 @@ export class DynamicSizeVirtualScrollStrategy<
       switchMap(() => {
         const renderedRange = this.renderedRange;
         const adjustIndexWith = renderedRange.start;
-        let scrolledIndex: number | null = null;
-        let position = 0;
+        let position = this.calcInitialPosition(renderedRange);
         return this.viewRepeater!.viewRendered$.pipe(
-          map(({ view, index: viewIndex, item }, idx) => {
+          tap(({ view, index: viewIndex, item }) => {
             const index = viewIndex + adjustIndexWith;
-            if (idx === 0) {
-              position = this.calcInitialPosition(renderedRange);
-            }
             const size = this.getItemSize(index);
             this.positionElement(this.getElement(view), position);
             position += size;
-            if (scrolledIndex == null && position > this.scrollTop) {
-              scrolledIndex = index;
-            }
-            if (scrolledIndex != null) {
-              this.scrolledIndex = scrolledIndex;
-            }
             this.viewRenderCallback.next({
               index,
               view,
@@ -434,7 +387,7 @@ export class DynamicSizeVirtualScrollStrategy<
         i--;
       }
     } else {
-      while (delta > 0 && i < this.contentLength && items[i].size < delta) {
+      while (delta > 0 && i < this.contentLength && items[i].size <= delta) {
         delta -= items[i].size;
         i++;
       }
@@ -447,28 +400,11 @@ export class DynamicSizeVirtualScrollStrategy<
 
   /** @internal */
   private calcInitialPosition(range: ListRange): number {
-    let pos = 0;
-    let i = 0;
-    this.anchorScrollTop = 0;
-    for (i = 0; i < this.anchorItem.index; i++) {
-      this.anchorScrollTop += this.getItemSize(i);
+    let position = this.anchorScrollTop - this.anchorItem.offset;
+    for (let i = range.start; i < this.anchorItem.index; i++) {
+      position -= this.getItemSize(i);
     }
-    this.anchorScrollTop += this.anchorItem.offset;
-
-    // Calculate position of starting node
-    pos = this.anchorScrollTop - this.anchorItem.offset;
-    i = this.anchorItem.index;
-    while (i > range.start) {
-      const itemSize = this.getItemSize(i - 1);
-      pos -= itemSize;
-      i--;
-    }
-    while (i < range.start) {
-      const itemSize = this.getItemSize(i);
-      pos += itemSize;
-      i++;
-    }
-    return pos;
+    return position;
   }
   /** @internal */
   private getItemSize(index: number): number {
@@ -480,24 +416,4 @@ export class DynamicSizeVirtualScrollStrategy<
     element.style.position = 'absolute';
     element.style.transform = `translateY(${scrollTop}px)`;
   }
-
-  /** @internal */
-  private getDiffer(values: U | null | undefined): IterableDiffer<T> | null {
-    if (this.dataDiffer) {
-      return this.dataDiffer;
-    }
-    return values
-      ? (this.dataDiffer = this.differs
-          .find(values)
-          .create(this.viewRepeater!._trackBy))
-      : null;
-  }
 }
-
-@NgModule({
-  imports: [],
-  exports: [DynamicSizeVirtualScrollStrategy],
-  declarations: [DynamicSizeVirtualScrollStrategy],
-  providers: [],
-})
-export class DynamicSizeVirtualScrollStrategyModule {}

@@ -18,14 +18,5 @@ export function unpatchedAnimationFrameTick(): Observable<void> {
 }
 
 export function unpatchedMicroTask(): Observable<void> {
-  return from(Promise.resolve());
-}
-
-export function getZoneUnPatchedApi<T extends object, N extends keyof T>(
-  targetOrName: T,
-  name: N
-) {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  return targetOrName['__zone_symbol__' + name] || targetOrName[name];
+  return from(Promise.resolve()) as Observable<void>;
 }

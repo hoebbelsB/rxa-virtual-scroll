@@ -48,7 +48,7 @@ import { NavigationEnd, Router, RouterModule } from '@angular/router';
       <a
         class="nav-item docs-link"
         target="_blank"
-        href="https://github.com/hoebbelsB/rxa-virtual-scroll/#readme"
+        href="https://github.com/rx-angular/rx-angular/blob/feat/virtual-scrolling/apps/docs/docs/template/api/virtual-scrolling.md"
       >
         🖺 Docs
       </a>

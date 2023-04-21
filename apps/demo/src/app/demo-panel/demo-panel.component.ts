@@ -111,6 +111,25 @@ import { DataService } from '../data.service';
                 </button>
               </td>
             </tr>
+            <tr *ngIf="withStableScrollbar">
+              <td>
+                With Stable Scrollbar
+                <span
+                  title="This is can cause very weird effects based on the contents you are rendering. If your views are of similar size and do not change massively, you can safely use it as it increases the UX."
+                  >💡️</span
+                >
+              </td>
+              <td>
+                <input
+                  type="checkbox"
+                  (change)="
+                    stableScrollbarChange.next(stableScrollbarInput.checked)
+                  "
+                  [checked]="stableScrollbar"
+                  #stableScrollbarInput
+                />
+              </td>
+            </tr>
             <tr *ngIf="withStrategy">
               <td>Render Strategy</td>
               <td>
@@ -165,6 +184,9 @@ export class DemoPanelComponent {
   @Input() withStrategy = true;
   @Input() itemAmount = 0;
   @Input() renderedItemsAmount = 0;
+  @Input() withStableScrollbar = false;
+  @Input() stableScrollbar = false;
+  @Output() stableScrollbarChange = new EventEmitter<boolean>();
   @Input() scrolledIndex = 0;
   @Output() scrollToIndex = new EventEmitter<number>();
   @Input() runwayItemsOpposite = 5;

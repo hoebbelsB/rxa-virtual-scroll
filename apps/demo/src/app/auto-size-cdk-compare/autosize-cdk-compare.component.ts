@@ -2,10 +2,6 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import {
-  AutosizeVirtualScrollStrategyModule,
-  RxVirtualScrollingModule,
-} from '@rx-angular/virtual-scrolling';
 
 import { DataService } from '../data.service';
 import { DemoPanelModule } from '../demo-panel/demo-panel.component';
@@ -63,9 +59,7 @@ export class AutosizeCdkCompareComponent {}
 
 @NgModule({
   imports: [
-    RxVirtualScrollingModule,
     CommonModule,
-    AutosizeVirtualScrollStrategyModule,
     RouterModule.forChild([
       { path: '', component: AutosizeCdkCompareComponent },
     ]),
