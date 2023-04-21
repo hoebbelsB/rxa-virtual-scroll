@@ -3,8 +3,9 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import {
-  AutosizeVirtualScrollStrategyModule,
-  RxVirtualScrollingModule,
+  AutoSizeVirtualScrollStrategy,
+  RxVirtualFor,
+  RxVirtualScrollViewportComponent,
 } from '@rx-angular/virtual-scrolling';
 
 import { DataService } from '../data.service';
@@ -22,6 +23,8 @@ import { DataService } from '../data.service';
         [itemAmount]="(state.items$ | async).length"
         [renderedItemsAmount]="state.renderedItems$ | async"
         [scrolledIndex]="viewport.scrolledIndexChange | async"
+        [withStableScrollbar]="true"
+        [(stableScrollbar)]="stableScrollbar"
         [(runwayItems)]="state.runwayItems"
         [(runwayItemsOpposite)]="state.runwayItemsOpposite"
         [(viewCache)]="state.viewCache"
@@ -30,6 +33,7 @@ import { DataService } from '../data.service';
         <rx-virtual-scroll-viewport
           [runwayItems]="state.runwayItems"
           [runwayItemsOpposite]="state.runwayItemsOpposite"
+          [withSyncScrollbar]="stableScrollbar"
           autosize
           #viewport
         >
@@ -78,6 +82,7 @@ import { DataService } from '../data.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AutosizeComponent {
+  stableScrollbar = true;
   constructor(public state: DemoComponentState) {}
 }
 
@@ -89,11 +94,12 @@ import { DemoPanelModule } from '../demo-panel/demo-panel.component';
 @NgModule({
   imports: [
     CommonModule,
-    RxVirtualScrollingModule,
-    AutosizeVirtualScrollStrategyModule,
     RouterModule.forChild([{ path: '', component: AutosizeComponent }]),
     FormsModule,
     DemoPanelModule,
+    RxVirtualFor,
+    AutoSizeVirtualScrollStrategy,
+    RxVirtualScrollViewportComponent,
   ],
   exports: [],
   declarations: [AutosizeComponent],

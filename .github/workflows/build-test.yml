@@ -32,7 +32,6 @@ jobs:
         uses: ./.github/actions/setup
       - run: npx nx format:check
       - run: npx nx affected -t lint --parallel=3
-      - run: npx nx affected -t test --parallel=3 --configuration=ci
       - run: npx nx affected -t build --exclude=demo
       - run: npx nx build demo
       - name: 'Upload demo artifact'

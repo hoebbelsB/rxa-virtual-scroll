@@ -2,8 +2,9 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import {
-  FixedSizeVirtualScrollStrategyModule,
-  RxVirtualScrollingModule,
+  FixedSizeVirtualScrollStrategy,
+  RxVirtualFor,
+  RxVirtualScrollViewportComponent,
 } from '@rx-angular/virtual-scrolling';
 
 import { DataService } from '../data.service';
@@ -91,8 +92,9 @@ import { DemoPanelModule } from '../demo-panel/demo-panel.component';
 
 @NgModule({
   imports: [
-    RxVirtualScrollingModule,
-    FixedSizeVirtualScrollStrategyModule,
+    RxVirtualScrollViewportComponent,
+    RxVirtualFor,
+    FixedSizeVirtualScrollStrategy,
     CommonModule,
     RouterModule.forChild([{ path: '', component: FixedSizeComponent }]),
     DemoPanelModule,

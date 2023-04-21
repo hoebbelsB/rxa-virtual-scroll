@@ -2,8 +2,9 @@ import { ScrollingModule } from '@angular/cdk/scrolling';
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import {
-  DynamicSizeVirtualScrollStrategyModule,
-  RxVirtualScrollingModule,
+  DynamicSizeVirtualScrollStrategy,
+  RxVirtualFor,
+  RxVirtualScrollViewportComponent,
 } from '@rx-angular/virtual-scrolling';
 
 @Component({
@@ -97,11 +98,12 @@ import { DemoPanelModule } from '../demo-panel/demo-panel.component';
 
 @NgModule({
   imports: [
-    RxVirtualScrollingModule,
+    RxVirtualScrollViewportComponent,
+    RxVirtualFor,
+    DynamicSizeVirtualScrollStrategy,
     CommonModule,
     DemoPanelModule,
     ScrollingModule,
-    DynamicSizeVirtualScrollStrategyModule,
   ],
   exports: [DynamicSizeRxaComponent],
   declarations: [DynamicSizeRxaComponent],

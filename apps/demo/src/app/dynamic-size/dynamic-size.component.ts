@@ -3,8 +3,9 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import {
-  DynamicSizeVirtualScrollStrategyModule,
-  RxVirtualScrollingModule,
+  DynamicSizeVirtualScrollStrategy,
+  RxVirtualFor,
+  RxVirtualScrollViewportComponent,
 } from '@rx-angular/virtual-scrolling';
 
 import { DataService, Item } from '../data.service';
@@ -102,9 +103,10 @@ import { DemoPanelModule } from '../demo-panel/demo-panel.component';
 
 @NgModule({
   imports: [
-    RxVirtualScrollingModule,
+    RxVirtualFor,
+    DynamicSizeVirtualScrollStrategy,
+    RxVirtualScrollViewportComponent,
     CommonModule,
-    DynamicSizeVirtualScrollStrategyModule,
     RouterModule.forChild([{ path: '', component: DynamicSizeComponent }]),
     FormsModule,
     DemoPanelModule,

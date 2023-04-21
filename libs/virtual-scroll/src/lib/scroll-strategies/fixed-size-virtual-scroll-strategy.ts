@@ -1,13 +1,11 @@
 import {
   Directive,
   EmbeddedViewRef,
-  Inject,
+  inject,
   Input,
   NgIterable,
-  NgModule,
   OnChanges,
   OnDestroy,
-  Optional,
   SimpleChanges,
 } from '@angular/core';
 import { coalesceWith } from '@rx-angular/cdk/coalescing';
@@ -39,7 +37,6 @@ import {
   DEFAULT_RUNWAY_ITEMS,
   DEFAULT_RUNWAY_ITEMS_OPPOSITE,
   RX_VIRTUAL_SCROLL_DEFAULT_OPTIONS,
-  RxVirtualScrollDefaultOptions,
 } from '../virtual-scroll.config';
 
 /**
@@ -63,6 +60,7 @@ import {
       useExisting: FixedSizeVirtualScrollStrategy,
     },
   ],
+  standalone: true,
 })
 export class FixedSizeVirtualScrollStrategy<
     T,
@@ -71,6 +69,10 @@ export class FixedSizeVirtualScrollStrategy<
   extends RxVirtualScrollStrategy<T, U>
   implements OnChanges, OnDestroy
 {
+  private readonly defaults? = inject(RX_VIRTUAL_SCROLL_DEFAULT_OPTIONS, {
+    optional: true,
+  });
+
   /**
    * @description
    * The size of the items in the virtually scrolled list
@@ -137,14 +139,6 @@ export class FixedSizeVirtualScrollStrategy<
   private direction: 'up' | 'down' = 'down';
 
   private readonly detached$ = new Subject<void>();
-
-  constructor(
-    @Optional()
-    @Inject(RX_VIRTUAL_SCROLL_DEFAULT_OPTIONS)
-    private defaults?: RxVirtualScrollDefaultOptions
-  ) {
-    super();
-  }
 
   /** @internal */
   ngOnChanges(changes: SimpleChanges) {
@@ -292,11 +286,3 @@ export class FixedSizeVirtualScrollStrategy<
     element.style.transform = `translateY(${scrollTop}px)`;
   }
 }
-
-@NgModule({
-  imports: [],
-  exports: [FixedSizeVirtualScrollStrategy],
-  declarations: [FixedSizeVirtualScrollStrategy],
-  providers: [],
-})
-export class FixedSizeVirtualScrollStrategyModule {}

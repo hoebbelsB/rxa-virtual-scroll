@@ -2,8 +2,9 @@ import { ScrollingModule } from '@angular/cdk/scrolling';
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import {
-  AutosizeVirtualScrollStrategyModule,
-  RxVirtualScrollingModule,
+  AutoSizeVirtualScrollStrategy,
+  RxVirtualFor,
+  RxVirtualScrollViewportComponent,
 } from '@rx-angular/virtual-scrolling';
 
 @Component({
@@ -19,6 +20,8 @@ import {
         [itemAmount]="(state.items$ | async).length"
         [renderedItemsAmount]="state.renderedItems$ | async"
         [scrolledIndex]="viewport.scrolledIndexChange | async"
+        [withStableScrollbar]="true"
+        [(stableScrollbar)]="stableScrollbar"
         [(runwayItems)]="state.runwayItems"
         [(runwayItemsOpposite)]="state.runwayItemsOpposite"
         [(viewCache)]="state.viewCache"
@@ -28,6 +31,7 @@ import {
           [runwayItems]="state.runwayItems"
           [runwayItemsOpposite]="state.runwayItemsOpposite"
           autosize
+          [withSyncScrollbar]="stableScrollbar"
           #viewport
         >
           <div
@@ -73,6 +77,7 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AutosizeRxaComponent {
+  stableScrollbar = true;
   constructor(public state: DemoComponentState) {}
 }
 
@@ -83,8 +88,9 @@ import { DemoPanelModule } from '../demo-panel/demo-panel.component';
 
 @NgModule({
   imports: [
-    RxVirtualScrollingModule,
-    AutosizeVirtualScrollStrategyModule,
+    RxVirtualFor,
+    AutoSizeVirtualScrollStrategy,
+    RxVirtualScrollViewportComponent,
     CommonModule,
     DemoPanelModule,
     ScrollingModule,
