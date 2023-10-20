@@ -60,7 +60,7 @@ import {
   RxVirtualListTemplateManager,
 } from './virtual-list-template-manager';
 import {
-  DEFAULT_VIEW_CACHE_SIZE,
+  DEFAULT_TEMPLATE_CACHE_SIZE,
   RX_VIRTUAL_SCROLL_DEFAULT_OPTIONS,
 } from './virtual-scroll.config';
 
@@ -202,7 +202,7 @@ export class RxVirtualFor<T, U extends NgIterable<T> = NgIterable<T>>
   private readonly templateRef = inject(
     TemplateRef<RxVirtualForViewContext<T, U>>
   );
-  private readonly viewContainerRef = inject(ViewContainerRef);
+  readonly viewContainer = inject(ViewContainerRef);
   private readonly strategyProvider = inject(RxStrategyProvider);
   private readonly errorHandler = inject(ErrorHandler);
   private readonly defaults? = inject(RX_VIRTUAL_SCROLL_DEFAULT_OPTIONS, {
@@ -216,7 +216,7 @@ export class RxVirtualFor<T, U extends NgIterable<T> = NgIterable<T>>
   private partiallyFinished = false;
 
   /** @internal */
-  private staticValue?: U | null;
+  private staticValue?: U;
   /** @internal */
   private renderStatic = false;
 
@@ -323,8 +323,8 @@ export class RxVirtualFor<T, U extends NgIterable<T> = NgIterable<T>>
    * scrolling the list. If this is set to 0, `rxVirtualFor` won't cache any view,
    * thus destroying & re-creating very often on scroll events.
    */
-  @Input('rxVirtualForViewCacheSize') viewCacheSize =
-    this.defaults?.viewCacheSize || DEFAULT_VIEW_CACHE_SIZE;
+  @Input('rxVirtualForTemplateCacheSize') templateCacheSize =
+    this.defaults?.templateCacheSize || DEFAULT_TEMPLATE_CACHE_SIZE;
 
   /**
    * @description
@@ -542,7 +542,7 @@ export class RxVirtualFor<T, U extends NgIterable<T> = NgIterable<T>>
     item: T;
   }>();
   /** @internal */
-  readonly renderingStart$ = new Subject<void>();
+  readonly renderingStart$ = new Subject<Set<number>>();
 
   /** @internal */
   private get template(): TemplateRef<RxVirtualForViewContext<T, U>> {
@@ -600,11 +600,11 @@ export class RxVirtualFor<T, U extends NgIterable<T> = NgIterable<T>>
       this.values = values;
     });
     this.templateManager = createVirtualListTemplateManager({
-      viewContainerRef: this.viewContainerRef,
+      viewContainerRef: this.viewContainer,
       templateRef: this.template,
       createViewContext: this.createViewContext.bind(this),
       updateViewContext: this.updateViewContext.bind(this),
-      viewCacheSize: this.viewCacheSize,
+      templateCacheSize: this.templateCacheSize,
     });
     this.render()
       .pipe(takeUntil(this._destroy$))
@@ -648,14 +648,8 @@ export class RxVirtualFor<T, U extends NgIterable<T> = NgIterable<T>>
         if (differ) {
           if (this.partiallyFinished) {
             const currentIterable = [];
-            for (
-              let i = 0, ilen = this.viewContainerRef.length;
-              i < ilen;
-              i++
-            ) {
-              const viewRef = <EmbeddedViewRef<any>>(
-                this.viewContainerRef.get(i)
-              );
+            for (let i = 0, ilen = this.viewContainer.length; i < ilen; i++) {
+              const viewRef = <EmbeddedViewRef<any>>this.viewContainer.get(i);
               currentIterable[i] = viewRef.context.$implicit;
             }
             differ.diff(currentIterable);
@@ -672,9 +666,13 @@ export class RxVirtualFor<T, U extends NgIterable<T> = NgIterable<T>>
           range.start
         );
         const updates = listChanges[0].sort((a, b) => a[0] - b[0]);
+        const indicesToPosition = new Set<number>();
         const insertedOrRemoved = listChanges[1];
-        const work$ = updates.map(([, work]) =>
-          onStrategy(
+        const work$ = updates.map(([index, work, removed]) => {
+          if (!removed) {
+            indicesToPosition.add(index);
+          }
+          return onStrategy(
             null,
             strategy,
             () => {
@@ -684,22 +682,23 @@ export class RxVirtualFor<T, U extends NgIterable<T> = NgIterable<T>>
               }
             },
             { ngZone: this.patchZone ? this.ngZone : undefined }
-          )
-        );
+          );
+        });
         this.partiallyFinished = true;
-        const notifyParent = insertedOrRemoved && parent;
-        this.renderingStart$.next();
+        const notifyParent = insertedOrRemoved && this.renderParent;
+        this.renderingStart$.next(indicesToPosition);
         return combineLatest(
           // emit after all changes are rendered
           work$.length > 0 ? work$ : [of(iterable)]
         ).pipe(
           tap(() => {
+            this.templateManager.setItemCount(items.length);
             this.partiallyFinished = false;
             const viewsRendered = [];
-            const end = this.viewContainerRef.length;
+            const end = this.viewContainer.length;
             let i = 0;
             for (i; i < end; i++) {
-              viewsRendered.push(this.viewContainerRef.get(i));
+              viewsRendered.push(this.viewContainer.get(i));
             }
             this.viewsRendered$.next(viewsRendered as any);
           }),
@@ -745,9 +744,7 @@ export class RxVirtualFor<T, U extends NgIterable<T> = NgIterable<T>>
       return this._differ;
     }
     return values
-      ? (this._differ = this.iterableDiffers
-          .find(values)
-          .create(this._trackBy ?? undefined))
+      ? (this._differ = this.iterableDiffers.find(values).create(this._trackBy))
       : null;
   }
 

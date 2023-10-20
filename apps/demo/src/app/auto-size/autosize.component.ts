@@ -6,7 +6,7 @@ import {
   AutoSizeVirtualScrollStrategy,
   RxVirtualFor,
   RxVirtualScrollViewportComponent,
-} from '@rx-angular/virtual-scrolling';
+} from '@rx-angular/template/experimental/virtual-scrolling';
 
 import { DataService } from '../data.service';
 
@@ -41,7 +41,7 @@ import { DataService } from '../data.service';
             class="item"
             *rxVirtualFor="
               let item of state.items$;
-              viewCacheSize: state.viewCache;
+              templateCacheSize: state.viewCache;
               renderCallback: state.renderCallback$;
               strategy: demoPanel.strategyChange
             "

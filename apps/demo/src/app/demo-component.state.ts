@@ -8,7 +8,7 @@ import {
 import {
   RX_VIRTUAL_SCROLL_DEFAULT_OPTIONS,
   RxVirtualScrollDefaultOptions,
-} from '@rx-angular/virtual-scrolling';
+} from '@rx-angular/template/experimental/virtual-scrolling';
 import { Subject } from 'rxjs';
 
 import { DataService } from './data.service';
@@ -26,7 +26,7 @@ export class DemoComponentState {
 
   showViewport = true;
 
-  private _viewCache = this.defaults.viewCacheSize;
+  private _viewCache = this.defaults.templateCacheSize;
   get viewCache() {
     return this._viewCache as number;
   }
