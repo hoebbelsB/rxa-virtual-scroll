@@ -5,23 +5,6 @@
   "sourceRoot": "libs/virtual-scroll/src",
   "prefix": "rx-virtual-scroll",
   "targets": {
-    "build": {
-      "executor": "@nx/angular:package",
-      "outputs": ["{workspaceRoot}/dist/{projectRoot}"],
-      "options": {
-        "project": "libs/virtual-scroll/ng-package.json",
-        "updateBuildableProjectDepsInPackageJson": true
-      },
-      "configurations": {
-        "production": {
-          "tsConfig": "libs/virtual-scroll/tsconfig.lib.prod.json"
-        },
-        "development": {
-          "tsConfig": "libs/virtual-scroll/tsconfig.lib.json"
-        }
-      },
-      "defaultConfiguration": "production"
-    },
     "test": {
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
