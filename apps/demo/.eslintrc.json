@@ -5,22 +5,18 @@
     {
       "files": ["*.ts"],
       "rules": {
-        "@angular-eslint/directive-selector": [
-          "off"
-        ],
-        "@angular-eslint/component-selector": [
-          "off"
-        ],
+        "@angular-eslint/directive-selector": ["off"],
+        "@angular-eslint/component-selector": ["off"],
         "@angular-eslint/no-host-metadata-property": ["off"]
       },
       "extends": [
-        "plugin:@nrwl/nx/angular",
+        "plugin:@nx/angular",
         "plugin:@angular-eslint/template/process-inline-templates"
       ]
     },
     {
       "files": ["*.html"],
-      "extends": ["plugin:@nrwl/nx/angular-template"],
+      "extends": ["plugin:@nx/angular-template"],
       "rules": {}
     }
   ]

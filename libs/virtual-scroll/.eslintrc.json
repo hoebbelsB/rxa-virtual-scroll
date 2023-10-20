@@ -4,10 +4,6 @@
   "overrides": [
     {
       "files": ["*.ts"],
-//      "extends": [
-//        "plugin:@angular-eslint/recommended",
-//        "plugin:@angular-eslint/template/process-inline-templates"
-//      ],
       "rules": {
         "@typescript-eslint/no-non-null-assertion": "off",
         "@angular-eslint/no-input-rename": "off",
@@ -16,9 +12,7 @@
     },
     {
       "files": ["*.html"],
-      "extends": [
-        "plugin:@angular-eslint/template/recommended"
-      ],
+      "extends": ["plugin:@angular-eslint/template/recommended"],
       "rules": {}
     }
   ]
