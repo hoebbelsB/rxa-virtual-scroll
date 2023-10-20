@@ -31,9 +31,8 @@ jobs:
       - name: Set up dependencies
         uses: ./.github/actions/setup
       - run: npx nx format:check
-      - run: npx nx affected -t lint --parallel=3
-      - run: npx nx affected -t build --exclude=demo
-      - run: npx nx build demo
+      - run: npx nx affected:lint --parallel=3
+      - run: npx nx affected:build
       - name: 'Upload demo artifact'
         if: github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@v3
