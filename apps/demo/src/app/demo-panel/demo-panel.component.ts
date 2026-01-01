@@ -1,4 +1,4 @@
-import { NgIf } from '@angular/common';
+
 import {
   ChangeDetectionStrategy,
   Component,
@@ -17,7 +17,7 @@ import { DataService } from '../data.service';
   template: `
     <details #details>
       <summary>Input & Stats</summary>
-
+    
       <div class="demo-panel__body">
         <div>
           <div><strong>Stats</strong></div>
@@ -48,10 +48,10 @@ import { DataService } from '../data.service';
                   type="number"
                   step="50"
                   max="1000"
-                />
+                  />
                 <button
                   (click)="dataService.addItems(addAmountInput.valueAsNumber)"
-                >
+                  >
                   Add
                 </button>
               </td>
@@ -65,7 +65,7 @@ import { DataService } from '../data.service';
                   type="number"
                   step="1"
                   min="0"
-                />
+                  />
               </td>
             </tr>
             <tr>
@@ -77,7 +77,7 @@ import { DataService } from '../data.service';
                   type="number"
                   min="0"
                   step="1"
-                />
+                  />
               </td>
             </tr>
             <tr>
@@ -90,65 +90,70 @@ import { DataService } from '../data.service';
                   type="number"
                   min="0"
                   step="1"
-                />
+                  />
               </td>
             </tr>
             <tr>
               <td>
                 Scroll To
-                <span
-                  title="This is probably not working correctly and should not be used in production"
-                  *ngIf="scrollToExperimental"
-                  >⚠️</span
-                >
-              </td>
-              <td>
-                <input type="number" min="0" step="1" #scrollToInput />
-                <button
-                  (click)="scrollToIndex.emit(scrollToInput.valueAsNumber)"
-                >
-                  Scroll
-                </button>
-              </td>
-            </tr>
-            <tr *ngIf="withStableScrollbar">
-              <td>
-                With Stable Scrollbar
-                <span
-                  title="This is can cause very weird effects based on the contents you are rendering. If your views are of similar size and do not change massively, you can safely use it as it increases the UX."
-                  >💡️</span
-                >
-              </td>
-              <td>
-                <input
-                  type="checkbox"
+                @if (scrollToExperimental) {
+                  <span
+                    title="This is probably not working correctly and should not be used in production"
+                    >⚠️</span
+                    >
+                  }
+                </td>
+                <td>
+                  <input type="number" min="0" step="1" #scrollToInput />
+                  <button
+                    (click)="scrollToIndex.emit(scrollToInput.valueAsNumber)"
+                    >
+                    Scroll
+                  </button>
+                </td>
+              </tr>
+              @if (withStableScrollbar) {
+                <tr>
+                  <td>
+                    With Stable Scrollbar
+                    <span
+                      title="This is can cause very weird effects based on the contents you are rendering. If your views are of similar size and do not change massively, you can safely use it as it increases the UX."
+                      >💡️</span
+                      >
+                    </td>
+                    <td>
+                      <input
+                        type="checkbox"
                   (change)="
                     stableScrollbarChange.next(stableScrollbarInput.checked)
                   "
-                  [checked]="stableScrollbar"
-                  #stableScrollbarInput
-                />
-              </td>
-            </tr>
-            <tr *ngIf="withStrategy">
-              <td>Render Strategy</td>
-              <td>
-                <select
-                  [ngModel]="strategy"
-                  (ngModelChange)="strategyChange.emit($event)"
-                >
-                  <option value="native">Native (sync)</option>
-                  <option value="immediate">Immediate</option>
-                  <option value="userBlocking">User Blocking</option>
-                  <option value="normal">Normal</option>
-                </select>
-              </td>
-            </tr>
-          </table>
-        </div>
-      </div>
-    </details>
-  `,
+                        [checked]="stableScrollbar"
+                        #stableScrollbarInput
+                        />
+                    </td>
+                  </tr>
+                }
+                @if (withStrategy) {
+                  <tr>
+                    <td>Render Strategy</td>
+                    <td>
+                      <select
+                        [ngModel]="strategy"
+                        (ngModelChange)="strategyChange.emit($event)"
+                        >
+                        <option value="native">Native (sync)</option>
+                        <option value="immediate">Immediate</option>
+                        <option value="userBlocking">User Blocking</option>
+                        <option value="normal">Normal</option>
+                      </select>
+                    </td>
+                  </tr>
+                }
+              </table>
+            </div>
+          </div>
+        </details>
+    `,
   host: {
     class: 'demo-panel',
   },
@@ -178,7 +183,7 @@ import { DataService } from '../data.service';
     `,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, NgIf],
+  imports: [FormsModule],
 })
 export class DemoPanelComponent {
   @Input() scrollToExperimental = false;

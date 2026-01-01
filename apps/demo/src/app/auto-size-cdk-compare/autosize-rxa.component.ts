@@ -1,4 +1,4 @@
-import { AsyncPipe, DatePipe, NgIf } from '@angular/common';
+import { AsyncPipe, DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import {
   AutoSizeVirtualScrollStrategy,
@@ -15,7 +15,7 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
     <div>
       <h3>Autosize Strategy</h3>
     </div>
-    <ng-container *ngIf="state.showViewport">
+    @if (state.showViewport) {
       <demo-panel
         #demoPanel
         (scrollToIndex)="viewport.scrollToIndex($event)"
@@ -35,7 +35,7 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
           autosize
           [withSyncScrollbar]="stableScrollbar"
           #viewport
-        >
+          >
           <div
             class="item"
             *rxVirtualFor="
@@ -44,7 +44,7 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
               templateCacheSize: state.viewCache;
               renderCallback: state.renderCallback$
             "
-          >
+            >
             <div>{{ item.id }}</div>
             <div class="item__content">{{ item.content }}</div>
             <div>{{ item.status }}</div>
@@ -52,8 +52,8 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
           </div>
         </rx-virtual-scroll-viewport>
       </div>
-    </ng-container>
-  `,
+    }
+    `,
   styles: [
     `
       :host {
@@ -80,11 +80,10 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
     RxVirtualFor,
     AutoSizeVirtualScrollStrategy,
     RxVirtualScrollViewportComponent,
-    NgIf,
     DatePipe,
     AsyncPipe,
-    DemoPanelComponent,
-  ],
+    DemoPanelComponent
+],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AutosizeRxaComponent {

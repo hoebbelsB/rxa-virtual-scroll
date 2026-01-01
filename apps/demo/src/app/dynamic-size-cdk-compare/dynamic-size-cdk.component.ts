@@ -3,7 +3,7 @@ import {
   CdkVirtualScrollViewport,
 } from '@angular/cdk/scrolling';
 import { CdkAutoSizeVirtualScroll } from '@angular/cdk-experimental/scrolling';
-import { AsyncPipe, DatePipe, NgIf } from '@angular/common';
+import { AsyncPipe, DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 
 import { Item } from '../data.service';
@@ -16,7 +16,7 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
     <div>
       <h3>@angular/cdk Autosize Strategy</h3>
     </div>
-    <ng-container *ngIf="state.showViewport">
+    @if (state.showViewport) {
       <demo-panel
         [withStrategy]="false"
         [scrollToExperimental]="true"
@@ -36,20 +36,22 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
               let item of state.items$;
               templateCacheSize: state.viewCache
             "
-          >
+            >
             <div>{{ item.id }}</div>
             <div class="item__content">{{ item.content }}</div>
             <div>{{ item.status }}</div>
             <div class="item__date">{{ item.date | date }}</div>
-            <div class="item__description" *ngIf="item.description">
-              <div><strong>Long Description:</strong></div>
-              <div>{{ item.description }}</div>
-            </div>
+            @if (item.description) {
+              <div class="item__description">
+                <div><strong>Long Description:</strong></div>
+                <div>{{ item.description }}</div>
+              </div>
+            }
           </div>
         </cdk-virtual-scroll-viewport>
       </div>
-    </ng-container>
-  `,
+    }
+    `,
   styles: [
     `
       :host {
@@ -79,14 +81,13 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
     `,
   ],
   imports: [
-    NgIf,
     DatePipe,
     AsyncPipe,
     DemoPanelComponent,
     CdkVirtualForOf,
     CdkVirtualScrollViewport,
-    CdkAutoSizeVirtualScroll,
-  ],
+    CdkAutoSizeVirtualScroll
+],
   providers: [DemoComponentState],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

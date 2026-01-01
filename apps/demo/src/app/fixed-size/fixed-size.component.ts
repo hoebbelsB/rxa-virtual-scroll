@@ -1,4 +1,4 @@
-import { AsyncPipe, DatePipe, NgIf } from '@angular/common';
+import { AsyncPipe, DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import {
   FixedSizeVirtualScrollStrategy,
@@ -14,7 +14,7 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
   selector: 'fixed-size',
   template: `
     <h3>Fixed Size Strategy</h3>
-    <ng-container *ngIf="state.showViewport">
+    @if (state.showViewport) {
       <demo-panel
         #demoPanel
         (scrollToIndex)="viewport.scrollToIndex($event)"
@@ -31,7 +31,7 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
           [runwayItemsOpposite]="state.runwayItemsOpposite"
           [runwayItems]="state.runwayItems"
           [itemSize]="50"
-        >
+          >
           <div
             class="item"
             *rxVirtualFor="
@@ -40,7 +40,7 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
               templateCacheSize: state.viewCache;
               strategy: demoPanel.strategyChange
             "
-          >
+            >
             <div>{{ item.id }}</div>
             <div class="item__content">{{ item.content }}</div>
             <div>{{ item.status }}</div>
@@ -48,8 +48,8 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
           </div>
         </rx-virtual-scroll-viewport>
       </div>
-    </ng-container>
-  `,
+    }
+    `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
@@ -84,11 +84,10 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
     RxVirtualFor,
     RxVirtualScrollViewportComponent,
     FixedSizeVirtualScrollStrategy,
-    NgIf,
     DatePipe,
     AsyncPipe,
-    DemoPanelComponent,
-  ],
+    DemoPanelComponent
+],
   providers: [DataService, DemoComponentState],
 })
 export class FixedSizeComponent {

@@ -3,7 +3,7 @@ import {
   CdkVirtualForOf,
   CdkVirtualScrollViewport,
 } from '@angular/cdk/scrolling';
-import { AsyncPipe, DatePipe, NgIf } from '@angular/common';
+import { AsyncPipe, DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -23,7 +23,7 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
     <div>
       <h3>@angular/cdk Fixed Size Strategy</h3>
     </div>
-    <ng-container *ngIf="state.showViewport">
+    @if (state.showViewport) {
       <demo-panel
         [withStrategy]="false"
         [scrolledIndex]="viewport.scrolledIndexChange | async"
@@ -39,7 +39,7 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
           [itemSize]="50"
           #viewport
           style="height: 100%"
-        >
+          >
           <div
             class="item"
             #item
@@ -47,7 +47,7 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
               let item of state.items$;
               templateCacheSize: state.viewCache
             "
-          >
+            >
             <div>{{ item.id }}</div>
             <div class="item__content">{{ item.content }}</div>
             <div>{{ item.status }}</div>
@@ -55,8 +55,8 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
           </div>
         </cdk-virtual-scroll-viewport>
       </div>
-    </ng-container>
-  `,
+    }
+    `,
   styles: [
     `
       :host {
@@ -85,14 +85,13 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
     `,
   ],
   imports: [
-    NgIf,
     DatePipe,
     AsyncPipe,
     DemoPanelComponent,
     CdkVirtualForOf,
     CdkVirtualScrollViewport,
-    CdkFixedSizeVirtualScroll,
-  ],
+    CdkFixedSizeVirtualScroll
+],
   providers: [DemoComponentState],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

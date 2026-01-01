@@ -3,7 +3,7 @@ import {
   CdkVirtualScrollViewport,
 } from '@angular/cdk/scrolling';
 import { CdkAutoSizeVirtualScroll } from '@angular/cdk-experimental/scrolling';
-import { AsyncPipe, DatePipe, NgIf } from '@angular/common';
+import { AsyncPipe, DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 
 import { DemoComponentState } from '../demo-component.state';
@@ -15,7 +15,7 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
     <div>
       <h3>@angular/cdk Autosize Strategy</h3>
     </div>
-    <ng-container *ngIf="state.showViewport">
+    @if (state.showViewport) {
       <demo-panel
         [withStrategy]="false"
         [scrollToExperimental]="true"
@@ -34,7 +34,7 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
               let item of state.items$;
               templateCacheSize: state.viewCache
             "
-          >
+            >
             <div>{{ item.id }}</div>
             <div class="item__content">{{ item.content }}</div>
             <div>{{ item.status }}</div>
@@ -42,8 +42,8 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
           </div>
         </cdk-virtual-scroll-viewport>
       </div>
-    </ng-container>
-  `,
+    }
+    `,
   styles: [
     `
       :host {
@@ -68,14 +68,13 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
   providers: [DemoComponentState],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    NgIf,
     DemoPanelComponent,
     AsyncPipe,
     CdkVirtualScrollViewport,
     CdkAutoSizeVirtualScroll,
     CdkVirtualForOf,
-    DatePipe,
-  ],
+    DatePipe
+],
 })
 export class AutosizeCdkComponent {
   state = inject(DemoComponentState);
