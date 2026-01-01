@@ -1,5 +1,5 @@
 import { AsyncPipe, DatePipe, NgIf } from '@angular/common';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import {
   AutoSizeVirtualScrollStrategy,
   RxVirtualFor,
@@ -92,5 +92,5 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
 })
 export class AutosizeComponent {
   stableScrollbar = true;
-  constructor(public state: DemoComponentState) {}
+  state = inject(DemoComponentState);
 }

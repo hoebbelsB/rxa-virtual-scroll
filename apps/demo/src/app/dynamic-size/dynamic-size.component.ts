@@ -1,5 +1,5 @@
 import { AsyncPipe, DatePipe, NgIf } from '@angular/common';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import {
   DynamicSizeVirtualScrollStrategy,
   RxVirtualFor,
@@ -102,5 +102,5 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
 export class DynamicSizeComponent {
   itemSize = (item: Item) => (item.description ? 120 : 50);
 
-  constructor(public state: DemoComponentState) {}
+  state = inject(DemoComponentState);
 }

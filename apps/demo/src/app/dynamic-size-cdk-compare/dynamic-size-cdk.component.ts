@@ -4,7 +4,7 @@ import {
 } from '@angular/cdk/scrolling';
 import { CdkAutoSizeVirtualScroll } from '@angular/cdk-experimental/scrolling';
 import { AsyncPipe, DatePipe, NgIf } from '@angular/common';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 
 import { Item } from '../data.service';
 import { DemoComponentState } from '../demo-component.state';
@@ -92,5 +92,5 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
 })
 export class DynamicSizeCdkComponent {
   itemSize = (item: Item) => (item.description ? 120 : 50);
-  constructor(public state: DemoComponentState) {}
+  state = inject(DemoComponentState);
 }

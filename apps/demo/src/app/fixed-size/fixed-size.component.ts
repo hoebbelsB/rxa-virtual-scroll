@@ -1,5 +1,5 @@
 import { AsyncPipe, DatePipe, NgIf } from '@angular/common';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import {
   FixedSizeVirtualScrollStrategy,
   RxVirtualFor,
@@ -92,5 +92,5 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
   providers: [DataService, DemoComponentState],
 })
 export class FixedSizeComponent {
-  constructor(public state: DemoComponentState) {}
+  state = inject(DemoComponentState);
 }

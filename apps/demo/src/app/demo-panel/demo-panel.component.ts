@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   EventEmitter,
+  inject,
   Input,
   Output,
 } from '@angular/core';
@@ -198,10 +199,11 @@ export class DemoPanelComponent {
 
   @Output() strategyChange = new EventEmitter<string>();
 
+  dataService = inject(DataService);
+
+  private strategyProvider = inject(RxStrategyProvider);
+
   strategy = this.strategyProvider.primaryStrategy;
 
-  constructor(
-    public dataService: DataService,
-    private strategyProvider: RxStrategyProvider,
-  ) {}
+  constructor() {}
 }

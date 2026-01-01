@@ -8,6 +8,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
+  inject,
   QueryList,
   ViewChildren,
 } from '@angular/core';
@@ -108,5 +109,5 @@ export class FixedSizeCdkComponent {
       ),
     ),
   );
-  constructor(public state: DemoComponentState) {}
+  state = inject(DemoComponentState);
 }

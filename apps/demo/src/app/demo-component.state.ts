@@ -1,20 +1,23 @@
 import {
   ChangeDetectorRef,
   ElementRef,
-  Inject,
+  inject,
   Injectable,
   NgZone,
 } from '@angular/core';
-import {
-  RX_VIRTUAL_SCROLL_DEFAULT_OPTIONS,
-  RxVirtualScrollDefaultOptions,
-} from '@rx-angular/template/virtual-scrolling';
+import { RX_VIRTUAL_SCROLL_DEFAULT_OPTIONS } from '@rx-angular/template/virtual-scrolling';
 import { Subject } from 'rxjs';
 
 import { DataService } from './data.service';
 
 @Injectable()
 export class DemoComponentState {
+  public dataService = inject(DataService);
+  private cdRef = inject(ChangeDetectorRef);
+  private elementRef = inject(ElementRef<HTMLElement>);
+  private ngZone = inject(NgZone);
+  private defaults = inject(RX_VIRTUAL_SCROLL_DEFAULT_OPTIONS);
+
   readonly renderCallback$ = new Subject<any>();
 
   renderedItems$: Subject<number> = new Subject<number>();
@@ -40,19 +43,12 @@ export class DemoComponentState {
     });
   }
 
-  constructor(
-    public dataService: DataService,
-    private cdRef: ChangeDetectorRef,
-    private elementRef: ElementRef<HTMLElement>,
-    private ngZone: NgZone,
-    @Inject(RX_VIRTUAL_SCROLL_DEFAULT_OPTIONS)
-    private defaults: RxVirtualScrollDefaultOptions
-  ) {
+  constructor() {
     this.renderCallback$.subscribe(() => {
       this.ngZone.run(() =>
         this.renderedItems$.next(
-          this.elementRef.nativeElement.querySelectorAll('.item').length
-        )
+          this.elementRef.nativeElement.querySelectorAll('.item').length,
+        ),
       );
     });
   }

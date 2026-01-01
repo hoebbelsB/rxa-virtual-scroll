@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { BehaviorSubject } from 'rxjs';
 
 export interface Item {
@@ -45,7 +46,7 @@ function randomDate() {
   const diff = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
   const randomDiff = Math.floor(Math.random() * diff);
   const randomDate = new Date(
-    start.getTime() + randomDiff * (1000 * 60 * 60 * 24)
+    start.getTime() + randomDiff * (1000 * 60 * 60 * 24),
   );
   return randomDate;
 }
@@ -63,19 +64,20 @@ function generateItems(startId: number, amount: number): Item[] {
 
 @Injectable()
 export class DataService {
-  items = generateItems(0, 30000);
+  _items = generateItems(0, 30000);
 
-  items$ = new BehaviorSubject<Item[]>(this.items);
+  items$ = new BehaviorSubject<Item[]>(this._items);
+  items = toSignal(this.items$);
 
   addItems(amount: number | string) {
     if (typeof amount === 'string') {
       amount = parseInt(amount);
     }
-    if (this.items.length + amount <= 100000) {
-      this.items = this.items.concat(
-        ...generateItems(this.items.length, amount)
+    if (this._items.length + amount <= 100000) {
+      this._items = this._items.concat(
+        ...generateItems(this._items.length, amount),
       );
-      this.items$.next(this.items);
+      this.items$.next(this._items);
     }
   }
 
