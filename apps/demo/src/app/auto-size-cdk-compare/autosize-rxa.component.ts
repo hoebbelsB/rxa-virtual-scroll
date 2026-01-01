@@ -1,11 +1,13 @@
-import { ScrollingModule } from '@angular/cdk/scrolling';
-import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { AsyncPipe, DatePipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import {
   AutoSizeVirtualScrollStrategy,
   RxVirtualFor,
   RxVirtualScrollViewportComponent,
-} from '@rx-angular/template/experimental/virtual-scrolling';
+} from '@rx-angular/template/virtual-scrolling';
+
+import { DemoComponentState } from '../demo-component.state';
+import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
 
 @Component({
   selector: 'auto-size-rxa',
@@ -13,11 +15,11 @@ import {
     <div>
       <h3>Autosize Strategy</h3>
     </div>
-    <ng-container *ngIf="state.showViewport">
+    @if (state.showViewport) {
       <demo-panel
         #demoPanel
         (scrollToIndex)="viewport.scrollToIndex($event)"
-        [itemAmount]="(state.items$ | async).length"
+        [itemAmount]="state.items().length"
         [renderedItemsAmount]="state.renderedItems$ | async"
         [scrolledIndex]="viewport.scrolledIndexChange | async"
         [withStableScrollbar]="true"
@@ -38,7 +40,7 @@ import {
             class="item"
             *rxVirtualFor="
               let item of state.items$;
-              strategy: demoPanel.strategyChange;
+              strategy: demoPanel.strategyChange$;
               templateCacheSize: state.viewCache;
               renderCallback: state.renderCallback$
             "
@@ -50,7 +52,7 @@ import {
           </div>
         </rx-virtual-scroll-viewport>
       </div>
-    </ng-container>
+    }
   `,
   styles: [
     `
@@ -74,29 +76,17 @@ import {
     `,
   ],
   providers: [DemoComponentState],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-})
-export class AutosizeRxaComponent {
-  stableScrollbar = true;
-  constructor(public state: DemoComponentState) {}
-}
-
-import { NgModule } from '@angular/core';
-
-import { DemoComponentState } from '../demo-component.state';
-import { DemoPanelModule } from '../demo-panel/demo-panel.component';
-
-@NgModule({
   imports: [
     RxVirtualFor,
     AutoSizeVirtualScrollStrategy,
     RxVirtualScrollViewportComponent,
-    CommonModule,
-    DemoPanelModule,
-    ScrollingModule,
+    DatePipe,
+    AsyncPipe,
+    DemoPanelComponent,
   ],
-  exports: [AutosizeRxaComponent],
-  declarations: [AutosizeRxaComponent],
-  providers: [],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AutosizeRxaModule {}
+export class AutosizeRxaComponent {
+  stableScrollbar = true;
+  state = inject(DemoComponentState);
+}

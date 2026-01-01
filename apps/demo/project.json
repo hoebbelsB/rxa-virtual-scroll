@@ -4,15 +4,15 @@
   "projectType": "application",
   "sourceRoot": "apps/demo/src",
   "prefix": "rx-virtual-scroll",
+  "tags": [],
   "targets": {
     "build": {
-      "executor": "@angular-devkit/build-angular:browser",
+      "executor": "@nx/angular:application",
       "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/apps/demo",
         "index": "apps/demo/src/index.html",
-        "main": "apps/demo/src/main.ts",
-        "polyfills": "apps/demo/src/polyfills.ts",
+        "browser": "apps/demo/src/main.ts",
         "tsConfig": "apps/demo/tsconfig.app.json",
         "inlineStyleLanguage": "scss",
         "assets": ["apps/demo/src/favicon.ico", "apps/demo/src/assets"],
@@ -43,32 +43,30 @@
           ]
         },
         "development": {
-          "buildOptimizer": false,
           "optimization": false,
-          "vendorChunk": true,
           "extractLicenses": false,
-          "sourceMap": true,
-          "namedChunks": true
+          "sourceMap": true
         }
       },
       "defaultConfiguration": "production"
     },
     "serve": {
-      "executor": "@angular-devkit/build-angular:dev-server",
+      "executor": "@nx/angular:dev-server",
       "configurations": {
         "production": {
-          "browserTarget": "demo:build:production"
+          "buildTarget": "demo:build:production"
         },
         "development": {
-          "browserTarget": "demo:build:development"
+          "buildTarget": "demo:build:development"
         }
       },
-      "defaultConfiguration": "development"
+      "defaultConfiguration": "development",
+      "continuous": true
     },
     "extract-i18n": {
       "executor": "@angular-devkit/build-angular:extract-i18n",
       "options": {
-        "browserTarget": "demo:build"
+        "buildTarget": "demo:build"
       }
     },
     "lint": {
@@ -83,7 +81,8 @@
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
         "jestConfig": "apps/demo/jest.config.ts",
-        "passWithNoTests": true
+        "passWithNoTests": true,
+        "tsConfig": "apps/demo/tsconfig.spec.json"
       },
       "configurations": {
         "ci": {
@@ -92,6 +91,5 @@
         }
       }
     }
-  },
-  "tags": []
+  }
 }

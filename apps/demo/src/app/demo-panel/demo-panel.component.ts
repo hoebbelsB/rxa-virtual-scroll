@@ -1,12 +1,11 @@
-import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  EventEmitter,
-  Input,
-  Output,
+  inject,
+  input,
+  output,
 } from '@angular/core';
-import { NgModule } from '@angular/core';
+import { outputToObservable } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { RxStrategyProvider } from '@rx-angular/cdk/render-strategies';
 
@@ -24,15 +23,15 @@ import { DataService } from '../data.service';
           <table>
             <tr>
               <td>Items in list</td>
-              <td>{{ itemAmount }}</td>
+              <td>{{ itemAmount() }}</td>
             </tr>
             <tr>
               <td>Rendered items</td>
-              <td>{{ renderedItemsAmount }}</td>
+              <td>{{ renderedItemsAmount() }}</td>
             </tr>
             <tr>
               <td>ScrolledIndex</td>
-              <td>{{ scrolledIndex }}</td>
+              <td>{{ scrolledIndex() }}</td>
             </tr>
           </table>
         </div>
@@ -60,7 +59,7 @@ import { DataService } from '../data.service';
               <td>Runway items</td>
               <td>
                 <input
-                  [ngModel]="runwayItems"
+                  [ngModel]="runwayItems()"
                   (ngModelChange)="runwayItemsChange.emit($event)"
                   type="number"
                   step="1"
@@ -72,7 +71,7 @@ import { DataService } from '../data.service';
               <td>Runway opposite items</td>
               <td>
                 <input
-                  [ngModel]="runwayItemsOpposite"
+                  [ngModel]="runwayItemsOpposite()"
                   (ngModelChange)="runwayItemsOppositeChange.emit($event)"
                   type="number"
                   min="0"
@@ -84,7 +83,7 @@ import { DataService } from '../data.service';
               <td>viewCache</td>
               <td>
                 <input
-                  [ngModel]="viewCache"
+                  [ngModel]="viewCache()"
                   [ngModelOptions]="{ updateOn: 'blur' }"
                   (ngModelChange)="viewCacheChange.emit($event)"
                   type="number"
@@ -96,11 +95,12 @@ import { DataService } from '../data.service';
             <tr>
               <td>
                 Scroll To
-                <span
-                  title="This is probably not working correctly and should not be used in production"
-                  *ngIf="scrollToExperimental"
-                  >⚠️</span
-                >
+                @if (scrollToExperimental()) {
+                  <span
+                    title="This is probably not working correctly and should not be used in production"
+                    >⚠️</span
+                  >
+                }
               </td>
               <td>
                 <input type="number" min="0" step="1" #scrollToInput />
@@ -111,39 +111,43 @@ import { DataService } from '../data.service';
                 </button>
               </td>
             </tr>
-            <tr *ngIf="withStableScrollbar">
-              <td>
-                With Stable Scrollbar
-                <span
-                  title="This is can cause very weird effects based on the contents you are rendering. If your views are of similar size and do not change massively, you can safely use it as it increases the UX."
-                  >💡️</span
-                >
-              </td>
-              <td>
-                <input
-                  type="checkbox"
-                  (change)="
-                    stableScrollbarChange.next(stableScrollbarInput.checked)
-                  "
-                  [checked]="stableScrollbar"
-                  #stableScrollbarInput
-                />
-              </td>
-            </tr>
-            <tr *ngIf="withStrategy">
-              <td>Render Strategy</td>
-              <td>
-                <select
-                  [ngModel]="strategy"
-                  (ngModelChange)="strategyChange.emit($event)"
-                >
-                  <option value="native">Native (sync)</option>
-                  <option value="immediate">Immediate</option>
-                  <option value="userBlocking">User Blocking</option>
-                  <option value="normal">Normal</option>
-                </select>
-              </td>
-            </tr>
+            @if (withStableScrollbar()) {
+              <tr>
+                <td>
+                  With Stable Scrollbar
+                  <span
+                    title="This is can cause very weird effects based on the contents you are rendering. If your views are of similar size and do not change massively, you can safely use it as it increases the UX."
+                    >💡️</span
+                  >
+                </td>
+                <td>
+                  <input
+                    type="checkbox"
+                    (change)="
+                      stableScrollbarChange.emit(stableScrollbarInput.checked)
+                    "
+                    [checked]="stableScrollbar()"
+                    #stableScrollbarInput
+                  />
+                </td>
+              </tr>
+            }
+            @if (withStrategy()) {
+              <tr>
+                <td>Render Strategy</td>
+                <td>
+                  <select
+                    [ngModel]="strategy"
+                    (ngModelChange)="strategyChange.emit($event)"
+                  >
+                    <option value="native">Native (sync)</option>
+                    <option value="immediate">Immediate</option>
+                    <option value="userBlocking">User Blocking</option>
+                    <option value="normal">Normal</option>
+                  </select>
+                </td>
+              </tr>
+            }
           </table>
         </div>
       </div>
@@ -178,38 +182,31 @@ import { DataService } from '../data.service';
     `,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [FormsModule],
 })
 export class DemoPanelComponent {
-  @Input() scrollToExperimental = false;
-  @Input() withStrategy = true;
-  @Input() itemAmount = 0;
-  @Input() renderedItemsAmount = 0;
-  @Input() withStableScrollbar = false;
-  @Input() stableScrollbar = false;
-  @Output() stableScrollbarChange = new EventEmitter<boolean>();
-  @Input() scrolledIndex = 0;
-  @Output() scrollToIndex = new EventEmitter<number>();
-  @Input() runwayItemsOpposite = 5;
-  @Output() runwayItemsOppositeChange = new EventEmitter<number>();
-  @Input() viewCache = 50;
-  @Output() viewCacheChange = new EventEmitter<number>();
-  @Input() runwayItems = 20;
-  @Output() runwayItemsChange = new EventEmitter<number>();
+  readonly scrollToExperimental = input(false);
+  readonly withStrategy = input(true);
+  readonly itemAmount = input(0);
+  readonly renderedItemsAmount = input(0);
+  readonly withStableScrollbar = input(false);
+  readonly stableScrollbar = input(false);
+  readonly stableScrollbarChange = output<boolean>();
+  readonly scrolledIndex = input(0);
+  readonly scrollToIndex = output<number>();
+  readonly runwayItemsOpposite = input(5);
+  readonly runwayItemsOppositeChange = output<number>();
+  readonly viewCache = input(50);
+  readonly viewCacheChange = output<number>();
+  readonly runwayItems = input(20);
+  readonly runwayItemsChange = output<number>();
 
-  @Output() strategyChange = new EventEmitter<string>();
+  readonly strategyChange = output<string>();
+  readonly strategyChange$ = outputToObservable(this.strategyChange);
+
+  dataService = inject(DataService);
+
+  private strategyProvider = inject(RxStrategyProvider);
 
   strategy = this.strategyProvider.primaryStrategy;
-
-  constructor(
-    public dataService: DataService,
-    private strategyProvider: RxStrategyProvider
-  ) {}
 }
-
-@NgModule({
-  imports: [FormsModule, CommonModule],
-  exports: [DemoPanelComponent],
-  declarations: [DemoPanelComponent],
-  providers: [],
-})
-export class DemoPanelModule {}

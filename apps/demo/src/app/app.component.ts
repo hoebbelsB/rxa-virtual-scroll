@@ -1,6 +1,11 @@
-import { Component, NgModule, ViewEncapsulation } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
-import { NavigationEnd, Router, RouterModule } from '@angular/router';
+import { Component, inject, ViewEncapsulation } from '@angular/core';
+import {
+  NavigationEnd,
+  Router,
+  RouterLink,
+  RouterLinkActive,
+  RouterOutlet,
+} from '@angular/router';
 
 @Component({
   selector: 'rx-virtual-scroll-root',
@@ -68,20 +73,22 @@ import { NavigationEnd, Router, RouterModule } from '@angular/router';
     class: 'virtual-scroll-root',
   },
   styleUrls: ['./app.component.scss'],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive],
 })
 export class AppComponent {
   navOpen = false;
+  #router = inject(Router);
 
-  constructor(private router: Router) {
+  constructor() {
     matchMedia('(max-width: 600px)').addEventListener(
       'change',
       (e: MediaQueryListEvent) => {
         if (e.matches) {
           this.navOpen = false;
         }
-      }
+      },
     );
-    router.events.subscribe((e) => {
+    this.#router.events.subscribe((e) => {
       if (e instanceof NavigationEnd) {
         this.navOpen = false;
       }
@@ -96,66 +103,3 @@ export class AppComponent {
     }
   }
 }
-
-@NgModule({
-  declarations: [AppComponent],
-  imports: [
-    BrowserModule,
-    RouterModule.forRoot(
-      [
-        {
-          path: 'demos/fixed-size',
-          loadChildren: () =>
-            import('./fixed-size/fixed-size.component').then(
-              (m) => m.FixedSizeModule
-            ),
-        },
-        {
-          path: 'demos/fixed-size-cdk-compare',
-          loadChildren: () =>
-            import(
-              './fixed-size-cdk-compare/fixed-size-cdk-compare.component'
-            ).then((m) => m.FixedSizeCdkCompareModule),
-        },
-        {
-          path: 'demos/dynamic-size',
-          loadChildren: () =>
-            import('./dynamic-size/dynamic-size.component').then(
-              (m) => m.DynamicSizeModule
-            ),
-        },
-        {
-          path: 'demos/dynamic-size-cdk-compare',
-          loadChildren: () =>
-            import(
-              './dynamic-size-cdk-compare/dynamic-size-cdk-compare.component'
-            ).then((m) => m.DynamicSizeCdkCompareModule),
-        },
-        {
-          path: 'demos/autosize',
-          loadChildren: () =>
-            import('./auto-size/autosize.component').then(
-              (m) => m.AutosizeModule
-            ),
-        },
-        {
-          path: 'demos/autosize-cdk-compare',
-          loadChildren: () =>
-            import(
-              './auto-size-cdk-compare/autosize-cdk-compare.component'
-            ).then((m) => m.AutosizeCdkCompareModule),
-        },
-        {
-          path: '',
-          redirectTo: 'demos/fixed-size',
-          pathMatch: 'full',
-        },
-      ],
-      {
-        useHash: true,
-      }
-    ),
-  ],
-  bootstrap: [AppComponent],
-})
-export class AppModule {}

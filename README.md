@@ -24,7 +24,7 @@ elements with transforms." [(@DasSurma)](https://twitter.com/dassurma)
 > **⚠ Notice:**
 > This package is currently experimental, the public API can potentially change
 
-The `@rx-angular/template/experimental/virtual-scrolling` package is a high performant alternative of the official `@angular/cdk/scrolling`.
+The `@rx-angular/template/virtual-scrolling` package is a high performant alternative of the official `@angular/cdk/scrolling`.
 The API is heavily inspired by `@angular/cdk/scrolling` and is divided into multiple
 core components which have to be glued together:
 
@@ -48,7 +48,7 @@ import {
   FixedSizeVirtualScrollStrategy, // choose any strategy you like
   RxVirtualScrollViewportComponent,
   RxVirtualFor,
-} from '@rx-angular/template/experimental/virtual-scrolling';
+} from '@rx-angular/template/virtual-scrolling';
 
 @Component({
   standalone: true,

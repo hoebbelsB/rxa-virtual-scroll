@@ -1,11 +1,13 @@
-import { ScrollingModule } from '@angular/cdk/scrolling';
-import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { AsyncPipe, DatePipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import {
   FixedSizeVirtualScrollStrategy,
   RxVirtualFor,
   RxVirtualScrollViewportComponent,
-} from '@rx-angular/template/experimental/virtual-scrolling';
+} from '@rx-angular/template/virtual-scrolling';
+
+import { DemoComponentState } from '../demo-component.state';
+import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
 
 @Component({
   selector: 'fixed-size-rxa',
@@ -13,11 +15,11 @@ import {
     <div>
       <h3>Fixed Size Strategy</h3>
     </div>
-    <ng-container *ngIf="state.showViewport">
+    @if (state.showViewport) {
       <demo-panel
         #demoPanel
         (scrollToIndex)="viewport.scrollToIndex($event)"
-        [itemAmount]="(state.items$ | async).length"
+        [itemAmount]="state.items().length"
         [renderedItemsAmount]="state.renderedItems$ | async"
         [scrolledIndex]="viewport.scrolledIndexChange | async"
         [(runwayItems)]="state.runwayItems"
@@ -35,7 +37,7 @@ import {
             class="item"
             *rxVirtualFor="
               let item of state.items$;
-              strategy: demoPanel.strategyChange;
+              strategy: demoPanel.strategyChange$;
               templateCacheSize: state.viewCache;
               renderCallback: state.renderCallback$
             "
@@ -47,7 +49,7 @@ import {
           </div>
         </rx-virtual-scroll-viewport>
       </div>
-    </ng-container>
+    }
   `,
   styles: [
     `
@@ -76,29 +78,17 @@ import {
       }
     `,
   ],
+  imports: [
+    RxVirtualFor,
+    FixedSizeVirtualScrollStrategy,
+    RxVirtualScrollViewportComponent,
+    DatePipe,
+    AsyncPipe,
+    DemoPanelComponent,
+  ],
   providers: [DemoComponentState],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FixedSizeRxaComponent {
-  constructor(public state: DemoComponentState) {}
+  state = inject(DemoComponentState);
 }
-
-import { NgModule } from '@angular/core';
-
-import { DemoComponentState } from '../demo-component.state';
-import { DemoPanelModule } from '../demo-panel/demo-panel.component';
-
-@NgModule({
-  imports: [
-    CommonModule,
-    DemoPanelModule,
-    ScrollingModule,
-    RxVirtualFor,
-    RxVirtualScrollViewportComponent,
-    FixedSizeVirtualScrollStrategy,
-  ],
-  exports: [FixedSizeRxaComponent],
-  declarations: [FixedSizeRxaComponent],
-  providers: [],
-})
-export class AutosizeRxaModule {}

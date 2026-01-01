@@ -1,14 +1,14 @@
-import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { AsyncPipe, DatePipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import {
   DynamicSizeVirtualScrollStrategy,
   RxVirtualFor,
   RxVirtualScrollViewportComponent,
-} from '@rx-angular/template/experimental/virtual-scrolling';
+} from '@rx-angular/template/virtual-scrolling';
 
 import { DataService, Item } from '../data.service';
+import { DemoComponentState } from '../demo-component.state';
+import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
 
 @Component({
   selector: 'dynamic-size',
@@ -16,11 +16,11 @@ import { DataService, Item } from '../data.service';
     <div>
       <h3>Dynamic Size Strategy</h3>
     </div>
-    <ng-container *ngIf="state.showViewport">
+    @if (state.showViewport) {
       <demo-panel
         #demoPanel
         (scrollToIndex)="viewport.scrollToIndex($event)"
-        [itemAmount]="(state.items$ | async).length"
+        [itemAmount]="state.items().length"
         [renderedItemsAmount]="state.renderedItems$ | async"
         [scrolledIndex]="viewport.scrolledIndexChange | async"
         [(runwayItems)]="state.runwayItems"
@@ -41,21 +41,23 @@ import { DataService, Item } from '../data.service';
               let item of state.items$;
               renderCallback: state.renderCallback$;
               templateCacheSize: state.viewCache;
-              strategy: demoPanel.strategyChange
+              strategy: demoPanel.strategyChange$
             "
           >
             <div>{{ item.id }}</div>
             <div class="item__content">{{ item.content }}</div>
             <div>{{ item.status }}</div>
             <div class="item__date">{{ item.date | date }}</div>
-            <div class="item__description" *ngIf="item.description">
-              <div><strong>Long Description:</strong></div>
-              <div>{{ item.description }}</div>
-            </div>
+            @if (item.description) {
+              <div class="item__description">
+                <div><strong>Long Description:</strong></div>
+                <div>{{ item.description }}</div>
+              </div>
+            }
           </div>
         </rx-virtual-scroll-viewport>
       </div>
-    </ng-container>
+    }
   `,
   styles: [
     `
@@ -87,32 +89,19 @@ import { DataService, Item } from '../data.service';
       }
     `,
   ],
+  imports: [
+    RxVirtualFor,
+    RxVirtualScrollViewportComponent,
+    DatePipe,
+    AsyncPipe,
+    DemoPanelComponent,
+    DynamicSizeVirtualScrollStrategy,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [DataService, DemoComponentState],
 })
 export class DynamicSizeComponent {
   itemSize = (item: Item) => (item.description ? 120 : 50);
 
-  constructor(public state: DemoComponentState) {}
+  state = inject(DemoComponentState);
 }
-
-import { NgModule } from '@angular/core';
-
-import { DemoComponentState } from '../demo-component.state';
-import { DemoPanelModule } from '../demo-panel/demo-panel.component';
-
-@NgModule({
-  imports: [
-    RxVirtualFor,
-    DynamicSizeVirtualScrollStrategy,
-    RxVirtualScrollViewportComponent,
-    CommonModule,
-    RouterModule.forChild([{ path: '', component: DynamicSizeComponent }]),
-    FormsModule,
-    DemoPanelModule,
-  ],
-  exports: [],
-  declarations: [DynamicSizeComponent],
-  providers: [],
-})
-export class DynamicSizeModule {}

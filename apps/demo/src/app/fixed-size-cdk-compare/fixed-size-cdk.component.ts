@@ -1,13 +1,20 @@
-import { ScrollingModule } from '@angular/cdk/scrolling';
-import { CommonModule } from '@angular/common';
+import {
+  CdkFixedSizeVirtualScroll,
+  CdkVirtualForOf,
+  CdkVirtualScrollViewport,
+} from '@angular/cdk/scrolling';
+import { AsyncPipe, DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   ElementRef,
-  QueryList,
-  ViewChildren,
+  inject,
+  viewChildren,
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+
+import { DemoComponentState } from '../demo-component.state';
+import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
 
 @Component({
   selector: 'fixed-size-cdk',
@@ -15,13 +22,13 @@ import { FormsModule } from '@angular/forms';
     <div>
       <h3>@angular/cdk Fixed Size Strategy</h3>
     </div>
-    <ng-container *ngIf="state.showViewport">
+    @if (state.showViewport) {
       <demo-panel
         [withStrategy]="false"
         [scrolledIndex]="viewport.scrolledIndexChange | async"
         (scrollToIndex)="viewport.scrollToIndex($event)"
-        [itemAmount]="(state.items$ | async).length"
-        [renderedItemsAmount]="renderedItems$ | async"
+        [itemAmount]="state.items().length"
+        [renderedItemsAmount]="renderedItems()"
         [(runwayItems)]="state.runwayItems"
         [(runwayItemsOpposite)]="state.runwayItemsOpposite"
         [(viewCache)]="state.viewCache"
@@ -47,7 +54,7 @@ import { FormsModule } from '@angular/forms';
           </div>
         </cdk-virtual-scroll-viewport>
       </div>
-    </ng-container>
+    }
   `,
   styles: [
     `
@@ -76,42 +83,20 @@ import { FormsModule } from '@angular/forms';
       }
     `,
   ],
+  imports: [
+    DatePipe,
+    AsyncPipe,
+    DemoPanelComponent,
+    CdkVirtualForOf,
+    CdkVirtualScrollViewport,
+    CdkFixedSizeVirtualScroll,
+  ],
   providers: [DemoComponentState],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FixedSizeCdkComponent {
-  @ViewChildren('item') items!: QueryList<ElementRef<HTMLElement>>;
+  readonly items = viewChildren<ElementRef<HTMLElement>>('item');
 
-  renderedItems$ = defer(() =>
-    from(Promise.resolve()).pipe(
-      switchMap(() =>
-        this.items.changes.pipe(
-          startWith(null),
-          map(() => this.items.length)
-        )
-      )
-    )
-  );
-  constructor(public state: DemoComponentState) {}
+  renderedItems = computed(() => this.items().length);
+  state = inject(DemoComponentState);
 }
-
-import { NgModule } from '@angular/core';
-import { defer, from } from 'rxjs';
-import { map, startWith, switchMap } from 'rxjs/operators';
-
-import { DemoComponentState } from '../demo-component.state';
-import { DemoPanelModule } from '../demo-panel/demo-panel.component';
-
-@NgModule({
-  imports: [
-    ScrollingModule,
-    CommonModule,
-    FormsModule,
-    DemoPanelModule,
-    ScrollingModule,
-  ],
-  exports: [FixedSizeCdkComponent],
-  declarations: [FixedSizeCdkComponent],
-  providers: [],
-})
-export class FixedSizeCdkModule {}

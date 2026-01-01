@@ -1,23 +1,24 @@
-import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { AsyncPipe, DatePipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import {
   FixedSizeVirtualScrollStrategy,
   RxVirtualFor,
   RxVirtualScrollViewportComponent,
-} from '@rx-angular/template/experimental/virtual-scrolling';
+} from '@rx-angular/template/virtual-scrolling';
 
 import { DataService } from '../data.service';
+import { DemoComponentState } from '../demo-component.state';
+import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
 
 @Component({
   selector: 'fixed-size',
   template: `
     <h3>Fixed Size Strategy</h3>
-    <ng-container *ngIf="state.showViewport">
+    @if (state.showViewport) {
       <demo-panel
         #demoPanel
         (scrollToIndex)="viewport.scrollToIndex($event)"
-        [itemAmount]="(state.items$ | async).length"
+        [itemAmount]="state.items().length"
         [renderedItemsAmount]="state.renderedItems$ | async"
         [scrolledIndex]="viewport.scrolledIndexChange | async"
         [(runwayItems)]="state.runwayItems"
@@ -37,7 +38,7 @@ import { DataService } from '../data.service';
               let item of state.dataService.items;
               renderCallback: state.renderCallback$;
               templateCacheSize: state.viewCache;
-              strategy: demoPanel.strategyChange
+              strategy: demoPanel.strategyChange$
             "
           >
             <div>{{ item.id }}</div>
@@ -47,7 +48,7 @@ import { DataService } from '../data.service';
           </div>
         </rx-virtual-scroll-viewport>
       </div>
-    </ng-container>
+    }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
@@ -79,28 +80,16 @@ import { DataService } from '../data.service';
       }
     `,
   ],
+  imports: [
+    RxVirtualFor,
+    RxVirtualScrollViewportComponent,
+    FixedSizeVirtualScrollStrategy,
+    DatePipe,
+    AsyncPipe,
+    DemoPanelComponent,
+  ],
   providers: [DataService, DemoComponentState],
 })
 export class FixedSizeComponent {
-  constructor(public state: DemoComponentState) {}
+  state = inject(DemoComponentState);
 }
-
-import { NgModule } from '@angular/core';
-
-import { DemoComponentState } from '../demo-component.state';
-import { DemoPanelModule } from '../demo-panel/demo-panel.component';
-
-@NgModule({
-  imports: [
-    RxVirtualScrollViewportComponent,
-    RxVirtualFor,
-    FixedSizeVirtualScrollStrategy,
-    CommonModule,
-    RouterModule.forChild([{ path: '', component: FixedSizeComponent }]),
-    DemoPanelModule,
-  ],
-  exports: [],
-  declarations: [FixedSizeComponent],
-  providers: [],
-})
-export class FixedSizeModule {}

@@ -1,12 +1,8 @@
-import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, NgModule } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 import { DataService } from '../data.service';
-import { DemoPanelModule } from '../demo-panel/demo-panel.component';
-import { DynamicSizeCdkModule } from './dynamic-size-cdk.component';
-import { DynamicSizeRxaModule } from './dynamic-size-rxa.component';
+import { DynamicSizeCdkComponent } from './dynamic-size-cdk.component';
+import { DynamicSizeRxaComponent } from './dynamic-size-rxa.component';
 
 @Component({
   selector: 'dynamic-size-cdk-compare',
@@ -54,22 +50,6 @@ import { DynamicSizeRxaModule } from './dynamic-size-rxa.component';
   ],
   providers: [DataService],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [DynamicSizeRxaComponent, DynamicSizeCdkComponent],
 })
 export class DynamicSizeCdkCompareComponent {}
-
-@NgModule({
-  imports: [
-    CommonModule,
-    RouterModule.forChild([
-      { path: '', component: DynamicSizeCdkCompareComponent },
-    ]),
-    FormsModule,
-    DemoPanelModule,
-    DynamicSizeCdkModule,
-    DynamicSizeRxaModule,
-  ],
-  exports: [],
-  declarations: [DynamicSizeCdkCompareComponent],
-  providers: [],
-})
-export class DynamicSizeCdkCompareModule {}
