@@ -7,7 +7,7 @@
       "rules": {
         "@angular-eslint/directive-selector": ["off"],
         "@angular-eslint/component-selector": ["off"],
-        "@angular-eslint/no-host-metadata-property": ["off"]
+        "@angular-eslint/prefer-standalone": "off"
       },
       "extends": [
         "plugin:@nx/angular",

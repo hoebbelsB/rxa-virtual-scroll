@@ -1,11 +1,13 @@
-import { ScrollingModule } from '@angular/cdk/scrolling';
-import { CommonModule } from '@angular/common';
+import { AsyncPipe, DatePipe, NgIf } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import {
   AutoSizeVirtualScrollStrategy,
   RxVirtualFor,
   RxVirtualScrollViewportComponent,
-} from '@rx-angular/template/experimental/virtual-scrolling';
+} from '@rx-angular/template/virtual-scrolling';
+
+import { DemoComponentState } from '../demo-component.state';
+import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
 
 @Component({
   selector: 'auto-size-rxa',
@@ -74,29 +76,18 @@ import {
     `,
   ],
   providers: [DemoComponentState],
+  imports: [
+    RxVirtualFor,
+    AutoSizeVirtualScrollStrategy,
+    RxVirtualScrollViewportComponent,
+    NgIf,
+    DatePipe,
+    AsyncPipe,
+    DemoPanelComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AutosizeRxaComponent {
   stableScrollbar = true;
   constructor(public state: DemoComponentState) {}
 }
-
-import { NgModule } from '@angular/core';
-
-import { DemoComponentState } from '../demo-component.state';
-import { DemoPanelModule } from '../demo-panel/demo-panel.component';
-
-@NgModule({
-  imports: [
-    RxVirtualFor,
-    AutoSizeVirtualScrollStrategy,
-    RxVirtualScrollViewportComponent,
-    CommonModule,
-    DemoPanelModule,
-    ScrollingModule,
-  ],
-  exports: [AutosizeRxaComponent],
-  declarations: [AutosizeRxaComponent],
-  providers: [],
-})
-export class AutosizeRxaModule {}

@@ -1,14 +1,14 @@
-import { CommonModule } from '@angular/common';
+import { AsyncPipe, DatePipe, NgIf } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
 import {
   DynamicSizeVirtualScrollStrategy,
   RxVirtualFor,
   RxVirtualScrollViewportComponent,
-} from '@rx-angular/template/experimental/virtual-scrolling';
+} from '@rx-angular/template/virtual-scrolling';
 
 import { DataService, Item } from '../data.service';
+import { DemoComponentState } from '../demo-component.state';
+import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
 
 @Component({
   selector: 'dynamic-size',
@@ -87,6 +87,15 @@ import { DataService, Item } from '../data.service';
       }
     `,
   ],
+  imports: [
+    RxVirtualFor,
+    RxVirtualScrollViewportComponent,
+    NgIf,
+    DatePipe,
+    AsyncPipe,
+    DemoPanelComponent,
+    DynamicSizeVirtualScrollStrategy,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [DataService, DemoComponentState],
 })
@@ -95,24 +104,3 @@ export class DynamicSizeComponent {
 
   constructor(public state: DemoComponentState) {}
 }
-
-import { NgModule } from '@angular/core';
-
-import { DemoComponentState } from '../demo-component.state';
-import { DemoPanelModule } from '../demo-panel/demo-panel.component';
-
-@NgModule({
-  imports: [
-    RxVirtualFor,
-    DynamicSizeVirtualScrollStrategy,
-    RxVirtualScrollViewportComponent,
-    CommonModule,
-    RouterModule.forChild([{ path: '', component: DynamicSizeComponent }]),
-    FormsModule,
-    DemoPanelModule,
-  ],
-  exports: [],
-  declarations: [DynamicSizeComponent],
-  providers: [],
-})
-export class DynamicSizeModule {}

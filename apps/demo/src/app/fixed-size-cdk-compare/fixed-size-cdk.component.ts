@@ -1,5 +1,9 @@
-import { ScrollingModule } from '@angular/cdk/scrolling';
-import { CommonModule } from '@angular/common';
+import {
+  CdkFixedSizeVirtualScroll,
+  CdkVirtualForOf,
+  CdkVirtualScrollViewport,
+} from '@angular/cdk/scrolling';
+import { AsyncPipe, DatePipe, NgIf } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -7,7 +11,10 @@ import {
   QueryList,
   ViewChildren,
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { defer, from, map, startWith, switchMap } from 'rxjs';
+
+import { DemoComponentState } from '../demo-component.state';
+import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
 
 @Component({
   selector: 'fixed-size-cdk',
@@ -76,6 +83,15 @@ import { FormsModule } from '@angular/forms';
       }
     `,
   ],
+  imports: [
+    NgIf,
+    DatePipe,
+    AsyncPipe,
+    DemoPanelComponent,
+    CdkVirtualForOf,
+    CdkVirtualScrollViewport,
+    CdkFixedSizeVirtualScroll,
+  ],
   providers: [DemoComponentState],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -87,31 +103,10 @@ export class FixedSizeCdkComponent {
       switchMap(() =>
         this.items.changes.pipe(
           startWith(null),
-          map(() => this.items.length)
-        )
-      )
-    )
+          map(() => this.items.length),
+        ),
+      ),
+    ),
   );
   constructor(public state: DemoComponentState) {}
 }
-
-import { NgModule } from '@angular/core';
-import { defer, from } from 'rxjs';
-import { map, startWith, switchMap } from 'rxjs/operators';
-
-import { DemoComponentState } from '../demo-component.state';
-import { DemoPanelModule } from '../demo-panel/demo-panel.component';
-
-@NgModule({
-  imports: [
-    ScrollingModule,
-    CommonModule,
-    FormsModule,
-    DemoPanelModule,
-    ScrollingModule,
-  ],
-  exports: [FixedSizeCdkComponent],
-  declarations: [FixedSizeCdkComponent],
-  providers: [],
-})
-export class FixedSizeCdkModule {}

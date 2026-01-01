@@ -60,7 +60,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: demo
-          path: dist/apps/demo
+          path: dist/apps/demo/browser
 
       - name: Set up GitHub Pages
         uses: actions/configure-pages@v2
@@ -68,7 +68,7 @@ jobs:
       - name: Upload demo to GitHub Pages
         uses: actions/upload-pages-artifact@v1
         with:
-          path: dist/apps/demo
+          path: dist/apps/demo/browser
 
       - name: Deploy docs to GitHub Pages
         id: deployment

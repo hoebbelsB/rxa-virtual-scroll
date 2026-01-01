@@ -1,13 +1,14 @@
-import { CommonModule } from '@angular/common';
+import { AsyncPipe, DatePipe, NgIf } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { RouterModule } from '@angular/router';
 import {
   FixedSizeVirtualScrollStrategy,
   RxVirtualFor,
   RxVirtualScrollViewportComponent,
-} from '@rx-angular/template/experimental/virtual-scrolling';
+} from '@rx-angular/template/virtual-scrolling';
 
 import { DataService } from '../data.service';
+import { DemoComponentState } from '../demo-component.state';
+import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
 
 @Component({
   selector: 'fixed-size',
@@ -79,28 +80,17 @@ import { DataService } from '../data.service';
       }
     `,
   ],
+  imports: [
+    RxVirtualFor,
+    RxVirtualScrollViewportComponent,
+    FixedSizeVirtualScrollStrategy,
+    NgIf,
+    DatePipe,
+    AsyncPipe,
+    DemoPanelComponent,
+  ],
   providers: [DataService, DemoComponentState],
 })
 export class FixedSizeComponent {
   constructor(public state: DemoComponentState) {}
 }
-
-import { NgModule } from '@angular/core';
-
-import { DemoComponentState } from '../demo-component.state';
-import { DemoPanelModule } from '../demo-panel/demo-panel.component';
-
-@NgModule({
-  imports: [
-    RxVirtualScrollViewportComponent,
-    RxVirtualFor,
-    FixedSizeVirtualScrollStrategy,
-    CommonModule,
-    RouterModule.forChild([{ path: '', component: FixedSizeComponent }]),
-    DemoPanelModule,
-  ],
-  exports: [],
-  declarations: [FixedSizeComponent],
-  providers: [],
-})
-export class FixedSizeModule {}

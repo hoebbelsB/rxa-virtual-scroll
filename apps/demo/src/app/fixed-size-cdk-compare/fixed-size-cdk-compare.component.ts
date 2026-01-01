@@ -1,12 +1,8 @@
-import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, NgModule } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 import { DataService } from '../data.service';
-import { DemoPanelModule } from '../demo-panel/demo-panel.component';
-import { FixedSizeCdkModule } from './fixed-size-cdk.component';
-import { AutosizeRxaModule } from './fixed-size-rxa.component';
+import { FixedSizeCdkComponent } from './fixed-size-cdk.component';
+import { FixedSizeRxaComponent } from './fixed-size-rxa.component';
 
 @Component({
   selector: 'fixed-size-cdk-compare',
@@ -54,22 +50,6 @@ import { AutosizeRxaModule } from './fixed-size-rxa.component';
   ],
   providers: [DataService],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [FixedSizeRxaComponent, FixedSizeCdkComponent],
 })
 export class FixedSizeCdkCompareComponent {}
-
-@NgModule({
-  imports: [
-    CommonModule,
-    RouterModule.forChild([
-      { path: '', component: FixedSizeCdkCompareComponent },
-    ]),
-    FormsModule,
-    DemoPanelModule,
-    FixedSizeCdkModule,
-    AutosizeRxaModule,
-  ],
-  exports: [],
-  declarations: [FixedSizeCdkCompareComponent],
-  providers: [],
-})
-export class FixedSizeCdkCompareModule {}

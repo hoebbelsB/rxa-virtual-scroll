@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { NgIf } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -6,7 +6,6 @@ import {
   Input,
   Output,
 } from '@angular/core';
-import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RxStrategyProvider } from '@rx-angular/cdk/render-strategies';
 
@@ -178,6 +177,7 @@ import { DataService } from '../data.service';
     `,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [FormsModule, NgIf],
 })
 export class DemoPanelComponent {
   @Input() scrollToExperimental = false;
@@ -202,14 +202,6 @@ export class DemoPanelComponent {
 
   constructor(
     public dataService: DataService,
-    private strategyProvider: RxStrategyProvider
+    private strategyProvider: RxStrategyProvider,
   ) {}
 }
-
-@NgModule({
-  imports: [FormsModule, CommonModule],
-  exports: [DemoPanelComponent],
-  declarations: [DemoPanelComponent],
-  providers: [],
-})
-export class DemoPanelModule {}

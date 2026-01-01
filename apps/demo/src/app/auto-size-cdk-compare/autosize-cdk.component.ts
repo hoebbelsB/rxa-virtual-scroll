@@ -1,8 +1,13 @@
-import { ScrollingModule } from '@angular/cdk/scrolling';
-import { ScrollingModule as ExperimentalScrolling } from '@angular/cdk-experimental/scrolling';
-import { CommonModule } from '@angular/common';
+import {
+  CdkVirtualForOf,
+  CdkVirtualScrollViewport,
+} from '@angular/cdk/scrolling';
+import { CdkAutoSizeVirtualScroll } from '@angular/cdk-experimental/scrolling';
+import { AsyncPipe, DatePipe, NgIf } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+
+import { DemoComponentState } from '../demo-component.state';
+import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
 
 @Component({
   selector: 'auto-size-cdk',
@@ -62,27 +67,16 @@ import { FormsModule } from '@angular/forms';
   ],
   providers: [DemoComponentState],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    NgIf,
+    DemoPanelComponent,
+    AsyncPipe,
+    CdkVirtualScrollViewport,
+    CdkAutoSizeVirtualScroll,
+    CdkVirtualForOf,
+    DatePipe,
+  ],
 })
 export class AutosizeCdkComponent {
   constructor(public state: DemoComponentState) {}
 }
-
-import { NgModule } from '@angular/core';
-
-import { DemoComponentState } from '../demo-component.state';
-import { DemoPanelModule } from '../demo-panel/demo-panel.component';
-
-@NgModule({
-  imports: [
-    ScrollingModule,
-    ExperimentalScrolling,
-    CommonModule,
-    FormsModule,
-    DemoPanelModule,
-    ScrollingModule,
-  ],
-  exports: [AutosizeCdkComponent],
-  declarations: [AutosizeCdkComponent],
-  providers: [],
-})
-export class AutosizeCdkModule {}

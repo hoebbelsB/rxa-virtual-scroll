@@ -1,14 +1,14 @@
-import { CommonModule } from '@angular/common';
+import { AsyncPipe, DatePipe, NgIf } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
 import {
   AutoSizeVirtualScrollStrategy,
   RxVirtualFor,
   RxVirtualScrollViewportComponent,
-} from '@rx-angular/template/experimental/virtual-scrolling';
+} from '@rx-angular/template/virtual-scrolling';
 
 import { DataService } from '../data.service';
+import { DemoComponentState } from '../demo-component.state';
+import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
 
 @Component({
   selector: 'auto-size',
@@ -78,6 +78,15 @@ import { DataService } from '../data.service';
       }
     `,
   ],
+  imports: [
+    RxVirtualFor,
+    AutoSizeVirtualScrollStrategy,
+    RxVirtualScrollViewportComponent,
+    NgIf,
+    DatePipe,
+    AsyncPipe,
+    DemoPanelComponent,
+  ],
   providers: [DataService, DemoComponentState],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -85,24 +94,3 @@ export class AutosizeComponent {
   stableScrollbar = true;
   constructor(public state: DemoComponentState) {}
 }
-
-import { NgModule } from '@angular/core';
-
-import { DemoComponentState } from '../demo-component.state';
-import { DemoPanelModule } from '../demo-panel/demo-panel.component';
-
-@NgModule({
-  imports: [
-    CommonModule,
-    RouterModule.forChild([{ path: '', component: AutosizeComponent }]),
-    FormsModule,
-    DemoPanelModule,
-    RxVirtualFor,
-    AutoSizeVirtualScrollStrategy,
-    RxVirtualScrollViewportComponent,
-  ],
-  exports: [],
-  declarations: [AutosizeComponent],
-  providers: [],
-})
-export class AutosizeModule {}

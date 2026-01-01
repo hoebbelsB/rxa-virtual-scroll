@@ -1,11 +1,14 @@
-import { ScrollingModule } from '@angular/cdk/scrolling';
-import { CommonModule } from '@angular/common';
+import { AsyncPipe, DatePipe, NgIf } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import {
   DynamicSizeVirtualScrollStrategy,
   RxVirtualFor,
   RxVirtualScrollViewportComponent,
-} from '@rx-angular/template/experimental/virtual-scrolling';
+} from '@rx-angular/template/virtual-scrolling';
+
+import { Item } from '../data.service';
+import { DemoComponentState } from '../demo-component.state';
+import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
 
 @Component({
   selector: 'dynamic-size-rxa',
@@ -82,6 +85,15 @@ import {
       }
     `,
   ],
+  imports: [
+    RxVirtualFor,
+    DynamicSizeVirtualScrollStrategy,
+    RxVirtualScrollViewportComponent,
+    NgIf,
+    DatePipe,
+    AsyncPipe,
+    DemoPanelComponent,
+  ],
   providers: [DemoComponentState],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -89,24 +101,3 @@ export class DynamicSizeRxaComponent {
   itemSize = (item: Item) => (item.description ? 120 : 50);
   constructor(public state: DemoComponentState) {}
 }
-
-import { NgModule } from '@angular/core';
-
-import { Item } from '../data.service';
-import { DemoComponentState } from '../demo-component.state';
-import { DemoPanelModule } from '../demo-panel/demo-panel.component';
-
-@NgModule({
-  imports: [
-    RxVirtualScrollViewportComponent,
-    RxVirtualFor,
-    DynamicSizeVirtualScrollStrategy,
-    CommonModule,
-    DemoPanelModule,
-    ScrollingModule,
-  ],
-  exports: [DynamicSizeRxaComponent],
-  declarations: [DynamicSizeRxaComponent],
-  providers: [],
-})
-export class DynamicSizeRxaModule {}

@@ -8,7 +8,7 @@ import {
 import {
   RX_VIRTUAL_SCROLL_DEFAULT_OPTIONS,
   RxVirtualScrollDefaultOptions,
-} from '@rx-angular/template/experimental/virtual-scrolling';
+} from '@rx-angular/template/virtual-scrolling';
 import { Subject } from 'rxjs';
 
 import { DataService } from './data.service';
