@@ -18,7 +18,7 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
       <demo-panel
         #demoPanel
         (scrollToIndex)="viewport.scrollToIndex($event)"
-        [itemAmount]="(state.items$ | async).length"
+        [itemAmount]="state.items().length"
         [renderedItemsAmount]="state.renderedItems$ | async"
         [scrolledIndex]="viewport.scrolledIndexChange | async"
         [(runwayItems)]="state.runwayItems"
@@ -31,16 +31,16 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
           [runwayItemsOpposite]="state.runwayItemsOpposite"
           [runwayItems]="state.runwayItems"
           [itemSize]="50"
-          >
+        >
           <div
             class="item"
             *rxVirtualFor="
               let item of state.dataService.items;
               renderCallback: state.renderCallback$;
               templateCacheSize: state.viewCache;
-              strategy: demoPanel.strategyChange
+              strategy: demoPanel.strategyChange$
             "
-            >
+          >
             <div>{{ item.id }}</div>
             <div class="item__content">{{ item.content }}</div>
             <div>{{ item.status }}</div>
@@ -49,7 +49,7 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
         </rx-virtual-scroll-viewport>
       </div>
     }
-    `,
+  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
@@ -86,8 +86,8 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
     FixedSizeVirtualScrollStrategy,
     DatePipe,
     AsyncPipe,
-    DemoPanelComponent
-],
+    DemoPanelComponent,
+  ],
   providers: [DataService, DemoComponentState],
 })
 export class FixedSizeComponent {

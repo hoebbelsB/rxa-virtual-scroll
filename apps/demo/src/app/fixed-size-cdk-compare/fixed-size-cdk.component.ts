@@ -7,12 +7,11 @@ import { AsyncPipe, DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   ElementRef,
   inject,
-  QueryList,
-  ViewChildren,
+  viewChildren,
 } from '@angular/core';
-import { defer, from, map, startWith, switchMap } from 'rxjs';
 
 import { DemoComponentState } from '../demo-component.state';
 import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
@@ -28,8 +27,8 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
         [withStrategy]="false"
         [scrolledIndex]="viewport.scrolledIndexChange | async"
         (scrollToIndex)="viewport.scrollToIndex($event)"
-        [itemAmount]="(state.items$ | async).length"
-        [renderedItemsAmount]="renderedItems$ | async"
+        [itemAmount]="state.items().length"
+        [renderedItemsAmount]="renderedItems()"
         [(runwayItems)]="state.runwayItems"
         [(runwayItemsOpposite)]="state.runwayItemsOpposite"
         [(viewCache)]="state.viewCache"
@@ -39,7 +38,7 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
           [itemSize]="50"
           #viewport
           style="height: 100%"
-          >
+        >
           <div
             class="item"
             #item
@@ -47,7 +46,7 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
               let item of state.items$;
               templateCacheSize: state.viewCache
             "
-            >
+          >
             <div>{{ item.id }}</div>
             <div class="item__content">{{ item.content }}</div>
             <div>{{ item.status }}</div>
@@ -56,7 +55,7 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
         </cdk-virtual-scroll-viewport>
       </div>
     }
-    `,
+  `,
   styles: [
     `
       :host {
@@ -90,23 +89,14 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
     DemoPanelComponent,
     CdkVirtualForOf,
     CdkVirtualScrollViewport,
-    CdkFixedSizeVirtualScroll
-],
+    CdkFixedSizeVirtualScroll,
+  ],
   providers: [DemoComponentState],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FixedSizeCdkComponent {
-  @ViewChildren('item') items!: QueryList<ElementRef<HTMLElement>>;
+  readonly items = viewChildren<ElementRef<HTMLElement>>('item');
 
-  renderedItems$ = defer(() =>
-    from(Promise.resolve()).pipe(
-      switchMap(() =>
-        this.items.changes.pipe(
-          startWith(null),
-          map(() => this.items.length),
-        ),
-      ),
-    ),
-  );
+  renderedItems = computed(() => this.items().length);
   state = inject(DemoComponentState);
 }

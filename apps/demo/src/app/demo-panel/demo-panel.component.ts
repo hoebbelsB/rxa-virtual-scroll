@@ -5,6 +5,7 @@ import {
   input,
   output,
 } from '@angular/core';
+import { outputToObservable } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { RxStrategyProvider } from '@rx-angular/cdk/render-strategies';
 
@@ -201,6 +202,7 @@ export class DemoPanelComponent {
   readonly runwayItemsChange = output<number>();
 
   readonly strategyChange = output<string>();
+  readonly strategyChange$ = outputToObservable(this.strategyChange);
 
   dataService = inject(DataService);
 

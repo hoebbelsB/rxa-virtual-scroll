@@ -23,6 +23,7 @@ export class DemoComponentState {
   renderedItems$: Subject<number> = new Subject<number>();
 
   items$ = this.dataService.items$;
+  items = this.dataService.items;
 
   runwayItems = this.defaults.runwayItems;
   runwayItemsOpposite = this.defaults.runwayItemsOpposite;

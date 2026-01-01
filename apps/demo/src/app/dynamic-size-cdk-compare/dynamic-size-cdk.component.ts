@@ -21,7 +21,7 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
         [withStrategy]="false"
         [scrollToExperimental]="true"
         (scrollToIndex)="viewport.scrollToIndex($event)"
-        [itemAmount]="(state.items$ | async).length"
+        [itemAmount]="state.items().length"
         [renderedItemsAmount]="state.renderedItems$ | async"
         [(runwayItems)]="state.runwayItems"
         [(runwayItemsOpposite)]="state.runwayItemsOpposite"
@@ -36,7 +36,7 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
               let item of state.items$;
               templateCacheSize: state.viewCache
             "
-            >
+          >
             <div>{{ item.id }}</div>
             <div class="item__content">{{ item.content }}</div>
             <div>{{ item.status }}</div>
@@ -51,7 +51,7 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
         </cdk-virtual-scroll-viewport>
       </div>
     }
-    `,
+  `,
   styles: [
     `
       :host {
@@ -86,8 +86,8 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
     DemoPanelComponent,
     CdkVirtualForOf,
     CdkVirtualScrollViewport,
-    CdkAutoSizeVirtualScroll
-],
+    CdkAutoSizeVirtualScroll,
+  ],
   providers: [DemoComponentState],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

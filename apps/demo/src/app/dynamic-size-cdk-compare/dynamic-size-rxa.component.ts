@@ -20,7 +20,7 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
       <demo-panel
         #demoPanel
         (scrollToIndex)="viewport.scrollToIndex($event)"
-        [itemAmount]="(state.items$ | async).length"
+        [itemAmount]="state.items().length"
         [renderedItemsAmount]="state.renderedItems$ | async"
         [scrolledIndex]="viewport.scrolledIndexChange | async"
         [(runwayItems)]="state.runwayItems"
@@ -33,7 +33,7 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
           [runwayItemsOpposite]="state.runwayItemsOpposite"
           [dynamic]="itemSize"
           #viewport
-          >
+        >
           <div
             class="item"
             [style.height.px]="itemSize(item)"
@@ -41,9 +41,9 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
               let item of state.items$;
               renderCallback: state.renderCallback$;
               templateCacheSize: state.viewCache;
-              strategy: demoPanel.strategyChange
+              strategy: demoPanel.strategyChange$
             "
-            >
+          >
             <div>{{ item.id }}</div>
             <div class="item__content">{{ item.content }}</div>
             <div>{{ item.status }}</div>
@@ -58,7 +58,7 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
         </rx-virtual-scroll-viewport>
       </div>
     }
-    `,
+  `,
   styles: [
     `
       :host {
@@ -93,8 +93,8 @@ import { DemoPanelComponent } from '../demo-panel/demo-panel.component';
     RxVirtualScrollViewportComponent,
     DatePipe,
     AsyncPipe,
-    DemoPanelComponent
-],
+    DemoPanelComponent,
+  ],
   providers: [DemoComponentState],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
